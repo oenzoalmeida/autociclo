@@ -8,6 +8,8 @@ import { AdminGuard } from '@/components/admin/admin-guard';
 
 type Log = Database['public']['Tables']['activity_logs']['Row'];
 type Profile = Database['public']['Tables']['profiles']['Row'];
+type AdminLog = Pick<Log, 'id' | 'user_id' | 'action' | 'created_at'>;
+type AdminUser = Pick<Profile, 'id' | 'email'>;
 
 const ACTION_LABEL: Record<string, string> = {
   mileage_updated: 'Quilometragem atualizada',
@@ -17,15 +19,15 @@ const ACTION_LABEL: Record<string, string> = {
 };
 
 function Atividade() {
-  const [logs, setLogs] = useState<Log[]>([]);
-  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [logs, setLogs] = useState<AdminLog[]>([]);
+  const [profiles, setProfiles] = useState<AdminUser[]>([]);
 
   useEffect(() => {
     const load = async () => {
       const supabase = createClient();
       const [l, p] = await Promise.all([
-        supabase.from('activity_logs').select('*').order('created_at', { ascending: false }).limit(50),
-        supabase.from('profiles').select('*'),
+        supabase.from('activity_logs').select('id, user_id, action, created_at').order('created_at', { ascending: false }).limit(50),
+        supabase.from('profiles').select('id, email'),
       ]);
       setLogs(l.data ?? []);
       setProfiles(p.data ?? []);
@@ -33,7 +35,7 @@ function Atividade() {
     load();
   }, []);
 
-  const userById: Record<string, Profile> = {};
+  const userById: Record<string, AdminUser> = {};
   profiles.forEach((p) => (userById[p.id] = p));
 
   return (

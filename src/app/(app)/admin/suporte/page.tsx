@@ -11,6 +11,7 @@ import { Skeleton, EmptyState } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/toast';
 
 type Ticket = Database['public']['Tables']['support_tickets']['Row'];
+type AdminTicket = Pick<Ticket, 'id' | 'name' | 'email' | 'category' | 'subject' | 'message' | 'status' | 'created_at'>;
 
 const CATEGORIES = ['Problema técnico', 'Dúvida sobre o sistema', 'Cadastro/conta', 'Veículo', 'Manutenção', 'Outro'];
 const STATUSES = ['Novo', 'Em atendimento', 'Resolvido'];
@@ -28,15 +29,15 @@ function statusBadge(status: string): string {
 
 function SuporteAdmin() {
   const { toast } = useToast();
-  const [tickets, setTickets] = useState<Ticket[] | null>(null);
+  const [tickets, setTickets] = useState<AdminTicket[] | null>(null);
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState('all');
   const [category, setCategory] = useState('all');
-  const [open, setOpen] = useState<Ticket | null>(null);
+  const [open, setOpen] = useState<AdminTicket | null>(null);
 
   const load = async () => {
     const supabase = createClient();
-    const { data } = await supabase.from('support_tickets').select('*').order('created_at', { ascending: false });
+    const { data } = await supabase.from('support_tickets').select('id, name, email, category, subject, message, status, created_at').order('created_at', { ascending: false });
     setTickets(data ?? []);
   };
 

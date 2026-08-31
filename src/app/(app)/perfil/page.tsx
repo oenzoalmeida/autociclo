@@ -102,6 +102,16 @@ export default function ProfilePage() {
   const deleteAccount = async () => {
     setDeleting(true);
     const supabase = createClient();
+    // 1. Remove os arquivos do usuário no storage privado (arquivo físico + metadata)
+    try {
+      const { data: paths } = await supabase.rpc('list_user_files');
+      if (paths && paths.length) {
+        await supabase.storage.from('vehicle-files').remove(paths);
+      }
+    } catch {
+      // falha parcial na limpeza de arquivos: a RPC remove os metadados restantes
+    }
+    // 2. Exclui a conta (e os metadados de storage restantes)
     const { error } = await supabase.rpc('delete_current_user');
     if (error) {
       toast('Não foi possível excluir a conta.', 'error');

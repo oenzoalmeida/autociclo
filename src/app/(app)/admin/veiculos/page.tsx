@@ -8,18 +8,20 @@ import { AdminGuard } from '@/components/admin/admin-guard';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 type Vehicle = Database['public']['Tables']['vehicles']['Row'];
+type AdminVehicle = Pick<Vehicle, 'id' | 'brand' | 'model' | 'version' | 'year_model' | 'current_mileage' | 'plate' | 'user_id'>;
+type AdminOwner = Pick<Profile, 'id' | 'email'>;
 
 function Veiculos() {
-  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
-  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [vehicles, setVehicles] = useState<AdminVehicle[]>([]);
+  const [profiles, setProfiles] = useState<AdminOwner[]>([]);
   const [query, setQuery] = useState('');
 
   useEffect(() => {
     const load = async () => {
       const supabase = createClient();
       const [v, p] = await Promise.all([
-        supabase.from('vehicles').select('*').order('created_at', { ascending: false }),
-        supabase.from('profiles').select('*'),
+        supabase.from('vehicles').select('id, brand, model, version, year_model, current_mileage, plate, user_id').order('created_at', { ascending: false }),
+        supabase.from('profiles').select('id, email'),
       ]);
       setVehicles(v.data ?? []);
       setProfiles(p.data ?? []);
@@ -27,7 +29,7 @@ function Veiculos() {
     load();
   }, []);
 
-  const ownerById: Record<string, Profile> = {};
+  const ownerById: Record<string, AdminOwner> = {};
   profiles.forEach((p) => (ownerById[p.id] = p));
 
   const filtered = useMemo(() => {

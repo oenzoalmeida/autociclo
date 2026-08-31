@@ -434,10 +434,6 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
-      generate_demo_data: {
-        Args: Record<PropertyKey, never>;
-        Returns: undefined;
-      };
       delete_current_user: {
         Args: Record<PropertyKey, never>;
         Returns: undefined;
@@ -445,6 +441,10 @@ export type Database = {
       is_admin: {
         Args: Record<PropertyKey, never>;
         Returns: boolean;
+      };
+      list_user_files: {
+        Args: Record<PropertyKey, never>;
+        Returns: string[];
       };
     };
     Enums: Record<string, never>;

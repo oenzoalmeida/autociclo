@@ -8,18 +8,20 @@ import { AdminGuard } from '@/components/admin/admin-guard';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 type UserRole = Database['public']['Tables']['user_roles']['Row'];
+type AdminUser = Pick<Profile, 'id' | 'name' | 'email' | 'created_at'>;
+type AdminRole = Pick<UserRole, 'user_id' | 'role'>;
 
 function Usuarios() {
-  const [users, setUsers] = useState<Profile[]>([]);
-  const [roles, setRoles] = useState<UserRole[]>([]);
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [roles, setRoles] = useState<AdminRole[]>([]);
   const [query, setQuery] = useState('');
 
   useEffect(() => {
     const load = async () => {
       const supabase = createClient();
       const [u, r] = await Promise.all([
-        supabase.from('profiles').select('*').order('created_at', { ascending: false }),
-        supabase.from('user_roles').select('*'),
+        supabase.from('profiles').select('id, name, email, created_at').order('created_at', { ascending: false }),
+        supabase.from('user_roles').select('user_id, role'),
       ]);
       setUsers(u.data ?? []);
       setRoles(r.data ?? []);

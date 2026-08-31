@@ -8,18 +8,20 @@ import { AdminGuard } from '@/components/admin/admin-guard';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 type Vehicle = Database['public']['Tables']['vehicles']['Row'];
+type AdminUser = Pick<Profile, 'id' | 'name' | 'email' | 'created_at'>;
+type AdminVehicle = Pick<Vehicle, 'id' | 'brand' | 'model' | 'version' | 'year_model' | 'current_mileage' | 'created_at'>;
 
 function Overview() {
-  const [users, setUsers] = useState<Profile[]>([]);
-  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [vehicles, setVehicles] = useState<AdminVehicle[]>([]);
   const [counts, setCounts] = useState({ records: 0, expenses: 0 });
 
   useEffect(() => {
     const load = async () => {
       const supabase = createClient();
       const [u, v, m, e] = await Promise.all([
-        supabase.from('profiles').select('*').order('created_at', { ascending: false }),
-        supabase.from('vehicles').select('*').order('created_at', { ascending: false }),
+        supabase.from('profiles').select('id, name, email, created_at').order('created_at', { ascending: false }),
+        supabase.from('vehicles').select('id, brand, model, version, year_model, current_mileage, created_at').order('created_at', { ascending: false }),
         supabase.from('maintenance_records').select('id'),
         supabase.from('expenses').select('id'),
       ]);
