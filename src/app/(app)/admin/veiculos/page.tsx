@@ -70,7 +70,7 @@ function Veiculos() {
                 <div className="min-w-0">
                   <div className="font-semibold">{v.brand} {v.model} {v.version ?? ''}</div>
                   <div className="truncate text-xs text-muted-foreground">
-                    {v.year_model} · {formatNumber(v.current_mileage)} km · {v.plate ?? 'sem placa'}
+                    {v.year_model} · {formatNumber(v.current_mileage)} km · {maskPlate(v.plate)}
                   </div>
                 </div>
                 <div className="shrink-0 text-right text-xs text-muted-foreground">
@@ -91,4 +91,11 @@ export default function AdminVeiculosPage() {
       <Veiculos />
     </AdminGuard>
   );
+}
+
+function maskPlate(plate: string | null): string {
+  if (!plate) return 'sem placa';
+  const clean = plate.replace(/[^A-Za-z0-9]/g, '');
+  if (clean.length <= 3) return clean;
+  return clean.slice(0, 3) + '••••';
 }
