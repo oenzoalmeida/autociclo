@@ -1,0 +1,17 @@
+import { NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
+
+// Confirmação de e-mail (signup email verification)
+export async function GET(request: Request) {
+  const { searchParams, origin } = new URL(request.url);
+  const code = searchParams.get('code');
+
+  if (code) {
+    const supabase = await createClient();
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    if (!error) {
+      return NextResponse.redirect(`${origin}/onboarding?msg=${encodeURIComponent('E-mail confirmado! Vamos configurar seu veículo.')}`);
+    }
+  }
+  return NextResponse.redirect(`${origin}/login?msg=${encodeURIComponent('Link de confirmação inválido ou expirado.')}&kind=${'error'}`);
+}
