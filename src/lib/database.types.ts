@@ -50,6 +50,8 @@ export type Database = {
           nickname: string | null;
           photo_url: string | null;
           monthly_usage: string | null;
+          usage_type: string;
+          severe_usage: boolean;
           archived: boolean;
           created_at: string;
           updated_at: string;
@@ -69,6 +71,8 @@ export type Database = {
           nickname?: string | null;
           photo_url?: string | null;
           monthly_usage?: string | null;
+          usage_type?: string;
+          severe_usage?: boolean;
           archived?: boolean;
         };
         Update: Partial<Database['public']['Tables']['vehicles']['Row']>;
@@ -135,6 +139,7 @@ export type Database = {
           interval_km: number | null;
           interval_months: number | null;
           manual_interval: boolean;
+          origin: string;
           notes: string | null;
           created_at: string;
           updated_at: string;
@@ -149,6 +154,7 @@ export type Database = {
           interval_km?: number | null;
           interval_months?: number | null;
           manual_interval?: boolean;
+          origin?: string;
         };
         Update: Partial<Database['public']['Tables']['vehicle_maintenance_items']['Row']>;
       };
@@ -430,6 +436,62 @@ export type Database = {
           status?: string;
           admin_note?: string | null;
         };
+      };
+      maintenance_recommendations: {
+        Row: {
+          id: string;
+          catalog_id: string;
+          brand: string | null;
+          model: string | null;
+          version: string | null;
+          year_start: number | null;
+          year_end: number | null;
+          engine: string | null;
+          fuel_type: string | null;
+          transmission: string | null;
+          interval_km: number | null;
+          interval_months: number | null;
+          origin: string;
+          source_note: string | null;
+          created_at: string;
+        };
+        Insert: {
+          catalog_id: string;
+          brand?: string | null;
+          model?: string | null;
+          version?: string | null;
+          year_start?: number | null;
+          year_end?: number | null;
+          engine?: string | null;
+          fuel_type?: string | null;
+          transmission?: string | null;
+          interval_km?: number | null;
+          interval_months?: number | null;
+          origin?: string;
+          source_note?: string | null;
+        };
+        Update: Partial<Database['public']['Tables']['maintenance_recommendations']['Row']>;
+      };
+      maintenance_interval_history: {
+        Row: {
+          id: string;
+          item_id: string;
+          user_id: string;
+          old_interval_km: number | null;
+          old_interval_months: number | null;
+          new_interval_km: number | null;
+          new_interval_months: number | null;
+          changed_at: string;
+        };
+        Insert: {
+          item_id: string;
+          user_id: string;
+          old_interval_km?: number | null;
+          old_interval_months?: number | null;
+          new_interval_km?: number | null;
+          new_interval_months?: number | null;
+        };
+        Update: Partial<Database['public']['Tables']['maintenance_interval_history']['Row']>;
       };
     };
     Views: Record<string, never>;

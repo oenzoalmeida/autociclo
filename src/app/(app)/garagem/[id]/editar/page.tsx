@@ -43,6 +43,8 @@ export default function EditVehiclePage() {
         plate: v?.plate ?? '',
         nickname: v?.nickname ?? '',
         monthly_usage: v?.monthly_usage ?? '1000-2000',
+        usage_type: v?.usage_type ?? 'misto',
+        severe_usage: v?.severe_usage ?? false,
       });
     };
     load();
@@ -66,6 +68,8 @@ export default function EditVehiclePage() {
         plate: data.plate || null,
         nickname: data.nickname || null,
         monthly_usage: data.monthly_usage,
+        usage_type: data.usage_type,
+        severe_usage: data.severe_usage,
       })
       .eq('id', vehicle.id);
     if (error) {

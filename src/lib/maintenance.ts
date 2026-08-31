@@ -34,7 +34,7 @@ export function computeItem(
 
   if (!hasKm && !hasTime) {
     if (!item.last_done_date && item.last_done_mileage === null) {
-      return { status: 'sem_info', dueKm: null, dueDate: null, kmDistance: null, daysLeft: null, urgency: 1e9, estimated: false };
+      return { status: 'sem_info', dueKm: null, dueDate: null, kmDistance: null, daysLeft: null, urgency: 1e9, estimated: item.origin === 'referencia_geral' };
     }
   }
 
@@ -83,7 +83,7 @@ export function computeItem(
   else if (status === 'atencao') urgency = 1e6 + Math.min(kmDistance ?? 1e9, daysLeft ?? 1e9);
   else if (status === 'em_dia') urgency = 2e6 + Math.min(kmDistance ?? 1e9, daysLeft ?? 1e9);
 
-  return { status, dueKm, dueDate, kmDistance, daysLeft, urgency, estimated: !item.manual_interval };
+  return { status, dueKm, dueDate, kmDistance, daysLeft, urgency, estimated: item.origin === 'referencia_geral' };
 }
 
 export const STATUS_LABEL: Record<ItemStatus, string> = {
@@ -104,6 +104,32 @@ export function statusColor(status: ItemStatus): string {
     default:
       return 'bg-muted text-muted-foreground';
   }
+}
+
+export const ORIGIN_LABEL: Record<string, string> = {
+  fabricante: 'Fabricante',
+  referencia_geral: 'Referência geral',
+  personalizada: 'Personalizada',
+};
+
+export function originLabel(origin: string | null | undefined): string {
+  if (!origin) return 'Referência geral';
+  return ORIGIN_LABEL[origin] ?? origin;
+}
+
+export const USAGE_TYPES = [
+  { v: 'urbano_leve', l: 'Urbano leve' },
+  { v: 'urbano_intenso', l: 'Urbano intenso / trânsito frequente' },
+  { v: 'rodoviario', l: 'Rodoviário' },
+  { v: 'estrada_terra', l: 'Estrada de terra' },
+  { v: 'comercial', l: 'Comercial / aplicativo' },
+  { v: 'misto', l: 'Misto' },
+  { v: 'personalizado', l: 'Personalizado' },
+];
+
+export function usageLabel(value: string | null | undefined): string {
+  if (!value) return 'Misto';
+  return USAGE_TYPES.find((u) => u.v === value)?.l ?? value;
 }
 
 // Velocidade média de uso (km/mês) a partir dos registros de km

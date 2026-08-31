@@ -20,6 +20,8 @@ export async function createVehicleWithDefaults(
     nickname?: string | null;
     photo_url?: string | null;
     monthly_usage?: string | null;
+    usage_type?: string | null;
+    severe_usage?: boolean;
   }
 ) {
   const { data: vehicle, error: vError } = await supabase
@@ -39,6 +41,8 @@ export async function createVehicleWithDefaults(
       nickname: data.nickname ?? null,
       photo_url: data.photo_url ?? null,
       monthly_usage: data.monthly_usage ?? null,
+      usage_type: data.usage_type ?? 'misto',
+      severe_usage: data.severe_usage ?? false,
     })
     .select()
     .single();

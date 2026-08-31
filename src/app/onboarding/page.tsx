@@ -83,6 +83,8 @@ export default function OnboardingPage() {
       nickname: data.nickname || null,
       photo_url: photoUrl,
       monthly_usage: data.monthly_usage,
+      usage_type: data.usage_type,
+      severe_usage: data.severe_usage,
     });
 
     if (veError) {

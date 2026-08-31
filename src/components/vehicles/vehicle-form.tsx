@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Field, Input, Select } from '@/components/ui/input';
+import { USAGE_TYPES } from '@/lib/maintenance';
 
 export interface VehicleFormData {
   brand: string;
@@ -16,6 +17,8 @@ export interface VehicleFormData {
   plate: string;
   nickname: string;
   monthly_usage: string;
+  usage_type: string;
+  severe_usage: boolean;
 }
 
 export const emptyVehicle: VehicleFormData = {
@@ -31,6 +34,8 @@ export const emptyVehicle: VehicleFormData = {
   plate: '',
   nickname: '',
   monthly_usage: '1000-2000',
+  usage_type: 'misto',
+  severe_usage: false,
 };
 
 const FUEL = ['Gasolina', 'Etanol', 'Flex', 'Diesel', 'GNV', 'Elétrico', 'Híbrido'];
@@ -54,7 +59,7 @@ export function VehicleFormFields({
   steps?: 'all' | 'basic' | 'info' | 'ident' | 'usage';
   currentStep?: number;
 }) {
-  const set = (k: keyof VehicleFormData, v: string) => onChange({ ...data, [k]: v });
+  const set = (k: keyof VehicleFormData, v: string | boolean) => onChange({ ...data, [k]: v });
 
   if (steps === 'basic' || currentStep === 1) {
     return (
@@ -146,7 +151,32 @@ export function VehicleFormFields({
             </label>
           ))}
         </div>
-        <p className="mt-2 text-xs text-muted-foreground">
+
+        <div className="mt-5 space-y-4">
+          <Field label="Tipo de uso" htmlFor="v-usage-type">
+            <Select id="v-usage-type" value={data.usage_type} onChange={(e) => set('usage_type', e.target.value)}>
+              {USAGE_TYPES.map((u) => <option key={u.v} value={u.v}>{u.l}</option>)}
+            </Select>
+          </Field>
+
+          <label className="flex cursor-pointer items-start gap-2 text-sm font-medium">
+            <input
+              type="checkbox"
+              checked={data.severe_usage}
+              onChange={(e) => set('severe_usage', e.target.checked)}
+              className="mt-0.5 h-4 w-4 accent-brand-600"
+            />
+            <span>
+              Uso severo
+              <span className="block text-xs font-normal text-muted-foreground">
+                Trânsito intenso, estrada de terra, uso comercial ou condições severas podem exigir
+                intervalos menores. Consulte o manual do veículo.
+              </span>
+            </span>
+          </label>
+        </div>
+
+        <p className="mt-3 text-xs text-muted-foreground">
           Isso ajuda a prever quando você precisará da próxima manutenção.
         </p>
       </fieldset>

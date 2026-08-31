@@ -41,7 +41,7 @@ export default function ManutencoesPage() {
   return (
     <div className="space-y-4">
       <Link href={`/garagem/${params.id}`} className="text-sm text-brand-600 dark:text-brand-400">← Voltar</Link>
-      <h1 className="text-2xl font-extrabold">Central de manutenções</h1>
+      <h1 className="text-2xl font-extrabold">Plano de manutenção</h1>
       <p className="text-sm text-muted-foreground">
         {vehicle.brand} {vehicle.model} — acompanhe os prazos de cada cuidado preventivo.
       </p>

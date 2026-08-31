@@ -51,25 +51,23 @@ function description(
   v: Vehicle
 ): string {
   if (c.status === 'atrasado') {
-    if (c.kmDistance !== null && c.kmDistance < 0) {
-      return `Prazo ultrapassado em ${formatNumber(Math.abs(c.kmDistance))} km.`;
-    }
-    if (c.daysLeft !== null && c.daysLeft < 0) {
-      return `Prazo ultrapassado em ${Math.abs(c.daysLeft)} ${pluralize(Math.abs(c.daysLeft), 'dia', 'dias')}.`;
-    }
+    const parts: string[] = [];
+    if (c.kmDistance !== null && c.kmDistance < 0) parts.push(`prazo ultrapassado em ${formatNumber(Math.abs(c.kmDistance))} km`);
+    if (c.daysLeft !== null && c.daysLeft < 0) parts.push(`${Math.abs(c.daysLeft)} ${pluralize(Math.abs(c.daysLeft), 'dia', 'dias')} atrasado`);
+    if (parts.length) return parts.join(' ou ') + '.';
     return 'Prazo ultrapassado.';
   }
   if (c.status === 'atencao') {
-    if (c.kmDistance !== null) {
-      return `Faltam aproximadamente ${formatNumber(c.kmDistance)} km.`;
-    }
-    if (c.daysLeft !== null) {
-      return `Recomendado em aproximadamente ${c.daysLeft} ${pluralize(c.daysLeft, 'dia', 'dias')}.`;
-    }
+    const parts: string[] = [];
+    if (c.kmDistance !== null && c.kmDistance >= 0) parts.push(`faltam aproximadamente ${formatNumber(c.kmDistance)} km`);
+    if (c.daysLeft !== null && c.daysLeft >= 0) parts.push(`${c.daysLeft} ${pluralize(c.daysLeft, 'dia', 'dias')}`);
+    if (parts.length) return parts.join(' ou ') + '.';
   }
   if (c.status === 'em_dia') {
-    if (c.kmDistance !== null) return `Em dia · próximo em ${formatNumber(c.kmDistance)} km.`;
-    if (c.daysLeft !== null) return `Em dia · próximo em ${c.daysLeft} ${pluralize(c.daysLeft, 'dia', 'dias')}.`;
+    const parts: string[] = [];
+    if (c.kmDistance !== null) parts.push(`próximo em ${formatNumber(c.kmDistance)} km`);
+    if (c.daysLeft !== null) parts.push(`${c.daysLeft} ${pluralize(c.daysLeft, 'dia', 'dias')}`);
+    if (parts.length) return `Em dia · ${parts.join(' ou ')}.`;
   }
   return 'Acompanhe o prazo deste item.';
 }

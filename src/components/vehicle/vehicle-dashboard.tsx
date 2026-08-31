@@ -8,7 +8,7 @@ import {
   loadVehicleDashboard,
   type VehicleDashboardData,
 } from '@/lib/data/vehicle-dashboard';
-import { computeItem, computeScore, estimateMonthlyKm, STATUS_LABEL, statusColor } from '@/lib/maintenance';
+import { computeItem, computeScore, estimateMonthlyKm, STATUS_LABEL, statusColor, usageLabel } from '@/lib/maintenance';
 import { formatKm } from '@/lib/format';
 import { Skeleton } from '@/components/ui/badge';
 import { ScoreCard } from './score-ring';
@@ -133,6 +133,8 @@ function Header({
         <p className="text-sm text-muted-foreground">
           {v.year_model} · {formatKm(v.current_mileage)}
           {v.nickname ? ` · ${v.nickname}` : ''}
+          {' · '}{usageLabel(v.usage_type)}
+          {v.severe_usage ? ' · uso severo' : ''}
         </p>
         <div className="mt-2 flex flex-wrap gap-2">
           <StatusPill score={score} />

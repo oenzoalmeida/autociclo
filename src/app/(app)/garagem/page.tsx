@@ -84,6 +84,8 @@ export default function GaragePage() {
       plate: data.plate || null,
       nickname: data.nickname || null,
       monthly_usage: data.monthly_usage,
+      usage_type: data.usage_type,
+      severe_usage: data.severe_usage,
     });
     if (error) {
       toast('Não foi possível adicionar.', 'error');
