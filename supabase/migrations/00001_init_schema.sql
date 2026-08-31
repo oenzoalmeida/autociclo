@@ -421,24 +421,36 @@ create index if not exists idx_members_vehicle on public.vehicle_members(vehicle
 
 -- ---------------------------------------------------------------------------
 -- STORAGE (buckets privados)
+-- Executado de forma condicional: em um projeto recém-criado o schema
+-- `storage` pode ainda não estar provisionado quando este script roda.
 -- ---------------------------------------------------------------------------
-insert into storage.buckets (id, name, public)
-values ('vehicle-files', 'vehicle-files', false)
-on conflict (id) do nothing;
+do $$
+declare
+  has_buckets boolean;
+  has_objects boolean;
+begin
+  select exists (
+    select 1 from information_schema.tables
+    where table_schema = 'storage' and table_name = 'buckets'
+  ) into has_buckets;
+  select exists (
+    select 1 from information_schema.tables
+    where table_schema = 'storage' and table_name = 'objects'
+  ) into has_objects;
 
--- Políticas de storage: apenas dono do arquivo
-create policy "vehicle files select" on storage.objects for select using (
-  bucket_id = 'vehicle-files' and auth.uid() = owner
-);
-create policy "vehicle files insert" on storage.objects for insert with check (
-  bucket_id = 'vehicle-files' and auth.uid() = owner
-);
-create policy "vehicle files update" on storage.objects for update using (
-  bucket_id = 'vehicle-files' and auth.uid() = owner
-);
-create policy "vehicle files delete" on storage.objects for delete using (
-  bucket_id = 'vehicle-files' and auth.uid() = owner
-);
+  if has_buckets then
+    insert into storage.buckets (id, name, public)
+    values ('vehicle-files', 'vehicle-files', false)
+    on conflict (id) do nothing;
+  end if;
+
+  if has_objects then
+    execute $policy$create policy "vehicle files select" on storage.objects for select using (bucket_id = 'vehicle-files' and auth.uid() = owner)$policy$;
+    execute $policy$create policy "vehicle files insert" on storage.objects for insert with check (bucket_id = 'vehicle-files' and auth.uid() = owner)$policy$;
+    execute $policy$create policy "vehicle files update" on storage.objects for update using (bucket_id = 'vehicle-files' and auth.uid() = owner)$policy$;
+    execute $policy$create policy "vehicle files delete" on storage.objects for delete using (bucket_id = 'vehicle-files' and auth.uid() = owner)$policy$;
+  end if;
+end $$;
 
 -- ---------------------------------------------------------------------------
 -- CATÁLOGO DE MANUTENÇÕES (valores = ESTIMATIVA GERAL)
@@ -562,3 +574,18 @@ $$;
 -- Para gerar os dados demo, execute após este script:
 --   select public.generate_demo_data();
 -- E entre com: demo@autociclo.app / Demo#1234
+
+-- ---------------------------------------------------------------------------
+-- EXCLUSÃO DE CONTA (self-service)
+-- ---------------------------------------------------------------------------
+create or replace function public.delete_current_user()
+returns void
+language sql
+security definer
+set search_path = public
+as $$
+  delete from auth.users where id = auth.uid();
+$$;
+
+revoke all on function public.delete_current_user() from public;
+grant execute on function public.delete_current_user() to authenticated;

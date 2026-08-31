@@ -35,7 +35,7 @@ export default function ProfilePage() {
       setEmail(prof?.email ?? '');
       setAvatar(prof?.avatar_url ?? null);
       const { data: prefs } = await supabase.from('user_preferences').select('theme').single();
-      if (prefs?.theme) setTheme(prefs.theme);
+      if (prefs?.theme) setTheme(prefs.theme as 'light' | 'dark' | 'system');
       setLoading(false);
     };
     load();
@@ -102,7 +102,7 @@ export default function ProfilePage() {
   const deleteAccount = async () => {
     setDeleting(true);
     const supabase = createClient();
-    const { error } = await supabase.auth.removeUser();
+    const { error } = await supabase.rpc('delete_current_user');
     if (error) {
       toast('Não foi possível excluir a conta.', 'error');
       setDeleting(false);

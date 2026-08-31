@@ -44,7 +44,7 @@ export default function ReportPage() {
   if (!vehicle) return <p className="py-16 text-center text-muted-foreground">Veículo não encontrado.</p>;
 
   const computed = items.map((it) => ({ item: it, c: computeItem(it, vehicle.current_mileage) }));
-  const score = computeScore(computed);
+  const score = computeScore(computed.map((x) => x.c));
   const done = records.length;
   const totalGasto = records.reduce((s, r) => s + (Number(r.total_amount) || 0), 0);
   const kmAtual = vehicle.current_mileage;
