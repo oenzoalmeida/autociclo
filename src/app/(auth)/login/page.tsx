@@ -27,7 +27,8 @@ export default function LoginPage() {
       setLoading(false);
       return;
     }
-    router.push('/home');
+    const { data: isAdmin } = await supabase.rpc('is_admin');
+    router.push(isAdmin ? '/admin' : '/home');
     router.refresh();
   };
 

@@ -32,6 +32,10 @@ export default function OnboardingPage() {
         router.push('/login');
         return;
       }
+      const { data: isAdmin } = await supabase.rpc('is_admin');
+      if (isAdmin) {
+        router.push('/admin');
+      }
     };
     init();
   }, [router]);

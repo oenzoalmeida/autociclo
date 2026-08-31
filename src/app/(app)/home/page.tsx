@@ -28,7 +28,8 @@ export default function HomePage() {
       if (user) {
         const { data: prof } = await supabase.from('profiles').select('name, onboarded').eq('id', user.id).single();
         setName(prof?.name?.split(' ')[0] ?? '');
-        if (prof && !prof.onboarded) {
+        const { data: isAdmin } = await supabase.rpc('is_admin');
+        if (!isAdmin && prof && !prof.onboarded) {
           window.location.href = '/onboarding';
           return;
         }
