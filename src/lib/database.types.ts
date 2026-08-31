@@ -402,6 +402,35 @@ export type Database = {
           role?: string;
         };
       };
+      support_tickets: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          email: string;
+          category: string;
+          subject: string;
+          message: string;
+          status: string;
+          admin_note: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          name: string;
+          email: string;
+          category: string;
+          subject: string;
+          message: string;
+          status?: string;
+          admin_note?: string | null;
+        };
+        Update: {
+          status?: string;
+          admin_note?: string | null;
+        };
+      };
     };
     Views: Record<string, never>;
     Functions: {

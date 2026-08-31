@@ -41,6 +41,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     { href: '/admin/usuarios', label: 'Usuários', icon: UsersIcon, active: pathname.startsWith('/admin/usuarios') },
     { href: '/admin/veiculos', label: 'Veículos', icon: GarageIcon, active: pathname.startsWith('/admin/veiculos') },
     { href: '/admin/atividade', label: 'Atividade', icon: ActivityIcon, active: pathname.startsWith('/admin/atividade') },
+    { href: '/admin/suporte', label: 'Suporte', icon: HelpIcon, active: pathname.startsWith('/admin/suporte') },
     { href: '/admin/configuracoes', label: 'Configurações', icon: SettingsIcon, active: pathname.startsWith('/admin/configuracoes') },
   ];
 
@@ -51,6 +52,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     { href: '/historico', label: 'Histórico', icon: HistoryIcon },
     { href: '/gastos', label: 'Gastos', icon: CoinsIcon },
     { href: '/alertas', label: 'Alertas', icon: BellIcon },
+    { href: '/suporte', label: 'Suporte', icon: HelpIcon },
     { href: '/perfil', label: 'Perfil', icon: ProfileIcon },
   ];
 
@@ -279,6 +281,15 @@ function BellIcon({ className }: { className?: string }) {
     <IconSvg className={className}>
       <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
       <path d="M13.7 21a2 2 0 0 1-3.4 0" />
+    </IconSvg>
+  );
+}
+function HelpIcon({ className }: { className?: string }) {
+  return (
+    <IconSvg className={className}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 2.5-3 4" />
+      <path d="M12 17h.01" />
     </IconSvg>
   );
 }
