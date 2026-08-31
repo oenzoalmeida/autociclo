@@ -1,0 +1,94 @@
+'use client';
+
+import { useEffect, useMemo, useState } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import type { Database } from '@/lib/database.types';
+import { formatNumber } from '@/lib/format';
+import { AdminGuard } from '@/components/admin/admin-guard';
+
+type Profile = Database['public']['Tables']['profiles']['Row'];
+type Vehicle = Database['public']['Tables']['vehicles']['Row'];
+
+function Veiculos() {
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [query, setQuery] = useState('');
+
+  useEffect(() => {
+    const load = async () => {
+      const supabase = createClient();
+      const [v, p] = await Promise.all([
+        supabase.from('vehicles').select('*').order('created_at', { ascending: false }),
+        supabase.from('profiles').select('*'),
+      ]);
+      setVehicles(v.data ?? []);
+      setProfiles(p.data ?? []);
+    };
+    load();
+  }, []);
+
+  const ownerById: Record<string, Profile> = {};
+  profiles.forEach((p) => (ownerById[p.id] = p));
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return vehicles;
+    return vehicles.filter((v) => {
+      const owner = ownerById[v.user_id];
+      return (
+        v.brand.toLowerCase().includes(q) ||
+        v.model.toLowerCase().includes(q) ||
+        (v.plate ?? '').toLowerCase().includes(q) ||
+        (owner?.email ?? '').toLowerCase().includes(q)
+      );
+    });
+  }, [vehicles, query, ownerById]);
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <h1 className="text-2xl font-extrabold">Veículos</h1>
+        <p className="text-sm text-muted-foreground">{vehicles.length} veículo(s) na plataforma.</p>
+      </div>
+
+      <input
+        type="search"
+        className="input"
+        placeholder="Buscar por marca, modelo, placa ou dono..."
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+      />
+
+      <div className="space-y-2">
+        {filtered.length === 0 ? (
+          <p className="text-sm text-muted-foreground">Nenhum veículo encontrado.</p>
+        ) : (
+          filtered.map((v) => {
+            const owner = ownerById[v.user_id];
+            return (
+              <div key={v.id} className="flex items-center justify-between gap-3 rounded-xl border border-border p-3 text-sm">
+                <div className="min-w-0">
+                  <div className="font-semibold">{v.brand} {v.model} {v.version ?? ''}</div>
+                  <div className="truncate text-xs text-muted-foreground">
+                    {v.year_model} · {formatNumber(v.current_mileage)} km · {v.plate ?? 'sem placa'}
+                  </div>
+                </div>
+                <div className="shrink-0 text-right text-xs text-muted-foreground">
+                  {owner ? owner.email : v.user_id.slice(0, 8)}
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default function AdminVeiculosPage() {
+  return (
+    <AdminGuard>
+      <Veiculos />
+    </AdminGuard>
+  );
+}
