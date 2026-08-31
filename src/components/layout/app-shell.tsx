@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { LogoMark } from '@/components/brand/logo';
 import { useToast } from '@/components/ui/toast';
@@ -20,6 +20,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const params = useSearchParams();
   const { toast } = useToast();
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const q = params.get('msg');
@@ -29,6 +30,15 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params]);
+
+  useEffect(() => {
+    const check = async () => {
+      const supabase = createClient();
+      const { data } = await supabase.rpc('is_admin');
+      if (data) setIsAdmin(true);
+    };
+    check();
+  }, []);
 
   const firstSeg = '/' + (pathname.split('/')[1] || '');
 
@@ -48,6 +58,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     { href: '/gastos', label: 'Gastos', icon: CoinsIcon },
     { href: '/historico', label: 'Histórico', icon: HistoryIcon },
     { href: '/alertas', label: 'Alertas', icon: BellIcon },
+    ...(isAdmin ? [{ href: '/admin', label: 'Admin', icon: ShieldIcon }] : []),
     { href: '/perfil', label: 'Perfil', icon: ProfileIcon },
   ];
 
@@ -207,6 +218,14 @@ function BellIcon({ className }: { className?: string }) {
     <IconSvg className={className}>
       <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
       <path d="M13.7 21a2 2 0 0 1-3.4 0" />
+    </IconSvg>
+  );
+}
+function ShieldIcon({ className }: { className?: string }) {
+  return (
+    <IconSvg className={className}>
+      <path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z" />
+      <path d="M9 12l2 2 4-4" />
     </IconSvg>
   );
 }

@@ -387,6 +387,21 @@ export type Database = {
         };
         Update: Partial<Database['public']['Tables']['vehicle_members']['Row']>;
       };
+      user_roles: {
+        Row: {
+          user_id: string;
+          role: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          role?: string;
+        };
+        Update: {
+          role?: string;
+        };
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -397,6 +412,10 @@ export type Database = {
       delete_current_user: {
         Args: Record<PropertyKey, never>;
         Returns: undefined;
+      };
+      is_admin: {
+        Args: Record<PropertyKey, never>;
+        Returns: boolean;
       };
     };
     Enums: Record<string, never>;
