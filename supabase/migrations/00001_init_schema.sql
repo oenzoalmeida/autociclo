@@ -302,18 +302,11 @@ create policy "prefs select own" on public.user_preferences for select using (au
 create policy "prefs insert own" on public.user_preferences for insert with check (auth.uid() = user_id);
 create policy "prefs update own" on public.user_preferences for update using (auth.uid() = user_id);
 
--- vehicles: proprietário (ou membro) gerencia
-create policy "vehicles select own" on public.vehicles for select using (
-  auth.uid() = user_id or exists (
-    select 1 from public.vehicle_members vm where vm.vehicle_id = vehicles.id and vm.user_id = auth.uid()
-  )
-);
+-- vehicles: proprietário gerencia (compartilhamento via vehicle_members é
+-- scaffolding futuro; evitar subquery circular que causaria recursão infinita no RLS)
+create policy "vehicles select own" on public.vehicles for select using (auth.uid() = user_id);
 create policy "vehicles insert own" on public.vehicles for insert with check (auth.uid() = user_id);
-create policy "vehicles update owner" on public.vehicles for update using (
-  auth.uid() = user_id or exists (
-    select 1 from public.vehicle_members vm where vm.vehicle_id = vehicles.id and vm.user_id = auth.uid() and vm.role in ('owner','editor')
-  )
-);
+create policy "vehicles update owner" on public.vehicles for update using (auth.uid() = user_id);
 create policy "vehicles delete owner" on public.vehicles for delete using (auth.uid() = user_id);
 
 -- vehicle_members
