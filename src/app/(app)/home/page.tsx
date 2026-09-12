@@ -123,7 +123,7 @@ function SingleVehicleSummary({ vehicle, detail }: { vehicle: Vehicle; detail?: 
       <div className="flex items-center gap-4">
         {vehicle.photo_url ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={vehicle.photo_url} alt="" className="h-16 w-16 rounded-2xl object-cover" />
+          <img src={vehicle.photo_url} alt={`Foto do veículo ${vehicle.nickname || vehicle.model}`} className="h-16 w-16 rounded-2xl object-cover" />
         ) : (
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 text-2xl text-white">🚗</div>
         )}
@@ -165,7 +165,7 @@ function GarageSummary({ vehicles, details }: { vehicles: Vehicle[]; details: Re
             <Link key={v.id} href={`/garagem/${v.id}`} className="card flex items-center gap-3 p-4 transition-shadow hover:shadow-card-hover">
               {v.photo_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={v.photo_url} alt="" className="h-12 w-12 rounded-xl object-cover" />
+                <img src={v.photo_url} alt={`Foto do veículo ${v.nickname || v.model}`} className="h-12 w-12 rounded-xl object-cover" />
               ) : (
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 text-lg text-white">🚗</div>
               )}

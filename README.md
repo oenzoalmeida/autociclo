@@ -29,7 +29,7 @@ O AutoCiclo é uma aplicação web responsiva/PWA para proprietários de veícul
 - **Painel administrativo** para administradores, com visão geral, usuários, veículos e atividade.
 - **Perfis de acesso**: cliente e admin.
 - **Tema** claro, escuro e seguir o sistema; **mobile first** com navegação inferior no celular e sidebar no desktop.
-- **PWA** instalável.
+- **PWA** instalável (manifest; os dados exigem conexão — sem modo offline).
 
 ---
 
@@ -98,6 +98,7 @@ Execute, no SQL Editor do Supabase, os scripts da pasta `supabase/migrations/` (
 
 1. `00001_init_schema.sql` — tabelas, RLS, storage e catálogo de manutenções.
 2. `00002_roles.sql` — papéis de acesso (`cliente`/`admin`).
+3. `00003` a `00007` — suporte, hardening de segurança, exclusão de conta, histórico de intervalos e plano de manutenção (executar na ordem numérica).
 
 ### 4. Rodar em desenvolvimento
 
@@ -138,7 +139,7 @@ O repositório está conectado à Vercel, com **auto-deploy a cada push na branc
 ## Segurança
 
 - **Row Level Security (RLS)** habilitada em todas as tabelas de dados.
-- Cada usuário acessa **exclusivamente os próprios dados** (políticas baseadas em `auth.uid()`).
+- Cada usuário acessa e altera **exclusivamente os próprios dados** (políticas baseadas em `auth.uid()`); contas administrativas possuem acesso de **leitura** para suporte, com placas parcialmente ocultas.
 - O storage é **privado**; cada usuário só acessa os próprios arquivos.
 - Nenhuma chave de serviço (`service role key`) é exposta no frontend.
 - Entradas são validadas e as rotas da aplicação exigem sessão autenticada.

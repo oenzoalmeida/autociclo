@@ -137,7 +137,7 @@ export default function GaragePage() {
                 <div className="flex items-center gap-3">
                   {v.photo_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={v.photo_url} alt="" className="h-14 w-14 rounded-xl object-cover" />
+                    <img src={v.photo_url} alt={`Foto do veículo ${v.nickname || v.model}`} className="h-14 w-14 rounded-xl object-cover" />
                   ) : (
                     <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 text-xl text-white">🚗</div>
                   )}
