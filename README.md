@@ -160,3 +160,19 @@ Os papéis são armazenados na tabela `user_roles` (vinculada ao `auth.users`) e
 ## Status atual
 
 MVP funcional em produção, com autenticação, garagem, quilometragem, manutenções, histórico, gastos, alertas, arquivos, relatório, painel administrativo e PWA. O banco, a autenticação e o storage usam Supabase, e o frontend está hospedado na Vercel.
+
+---
+
+## Avisos específicos
+
+Alertas e recomendações de manutenção são sugestões calculadas pelo aplicativo a partir das informações registradas pelo usuário e **não substituem a avaliação de um profissional mecânico**. Confirme sempre as intervals e os procedimentos no manual do veículo.
+
+## Limitações conhecidas
+
+- A demonstração roda em planos gratuitos (Vercel/Supabase): o primeiro acesso pode ser mais lento e os limites do plano se aplicam.
+- É um projeto de portfólio: os dados podem ser removidos a qualquer momento.
+- O painel administrativo é de uso interno do autor; cadastros pela página pública são criados como Cliente.
+
+## Autor
+
+Enzo Almeida
