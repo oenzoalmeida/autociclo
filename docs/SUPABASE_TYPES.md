@@ -23,6 +23,18 @@ parameter of type 'never'`) porque a inferência de resultado das queries
 (`.select(...)`, `.update(...)`) degrada para `never` quando o `Database`
 hand-written não tem a estrutura completa esperada pelas versões novas.
 
+**Consequência prática para segurança:** o `npm audit` reporta 2 **low** em
+`@supabase/supabase-js`/`@supabase/auth-js` (Insecure Path Routing) com fix
+não-major (`supabase-js 2.117.2`). Mas atualizar **somente** o
+`@supabase/supabase-js` para `2.117.2`, mantendo o `@supabase/ssr 0.5.2`,
+também quebra o typecheck: **163 erros `never`**. Ou seja, nem o bump de
+segurança é aplicável antes da regeneração dos types — ela é o pré-requisito
+de qualquer atualização desses pacotes.
+
+Para completar, o `npm audit` reporta ainda 1 **moderate** + 1 **high**
+(cadeia `postcss` via `next`): o fix exige `next 16.3.7` (**major**) e ficou
+fora do escopo — depende de decisão do dono sobre migrar para Next 16.
+
 Além disso, os pins têm que subir **juntos** — peer dependency do
 `@supabase/ssr`:
 
