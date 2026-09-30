@@ -165,7 +165,7 @@ MVP funcional em produção, com autenticação, garagem, quilometragem, manuten
 
 ## Avisos específicos
 
-Alertas e recomendações de manutenção são sugestões calculadas pelo aplicativo a partir das informações registradas pelo usuário e **não substituem a avaliação de um profissional mecânico**. Confirme sempre as intervals e os procedimentos no manual do veículo.
+Alertas e recomendações de manutenção são sugestões calculadas pelo aplicativo a partir das informações registradas pelo usuário e **não substituem a avaliação de um profissional mecânico**. Confirme sempre os intervalos e os procedimentos no manual do veículo.
 
 ## Limitações conhecidas
 
