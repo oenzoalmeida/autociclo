@@ -29,8 +29,10 @@ function Veiculos() {
     load();
   }, []);
 
-  const ownerById: Record<string, AdminOwner> = {};
-  profiles.forEach((p) => (ownerById[p.id] = p));
+  const ownerById = useMemo<Record<string, AdminOwner>>(
+    () => Object.fromEntries(profiles.map((p) => [p.id, p])),
+    [profiles]
+  );
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
