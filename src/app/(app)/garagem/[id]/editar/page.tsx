@@ -94,7 +94,7 @@ export default function EditVehiclePage() {
     const supabase = createClient();
     await supabase.from('vehicles').delete().eq('id', vehicle.id);
     toast('Veículo excluído.');
-    window.location.href = '/garagem';
+    router.push('/garagem');
   };
 
   if (!data) return <Skeleton className="h-96 w-full" />;
