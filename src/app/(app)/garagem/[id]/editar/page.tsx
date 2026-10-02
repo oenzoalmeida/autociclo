@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import type { Database } from '@/lib/database.types';
 import { Skeleton } from '@/components/ui/badge';
@@ -18,6 +18,7 @@ type Vehicle = Database['public']['Tables']['vehicles']['Row'];
 
 export default function EditVehiclePage() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
   const { toast } = useToast();
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [data, setData] = useState<VehicleFormData | null>(null);
@@ -85,7 +86,7 @@ export default function EditVehiclePage() {
     const supabase = createClient();
     await supabase.from('vehicles').update({ archived: !vehicle.archived }).eq('id', vehicle.id);
     toast(vehicle.archived ? 'Veículo reativado.' : 'Veículo arquivado.');
-    window.location.href = '/garagem';
+    router.push('/garagem');
   };
 
   const remove = async () => {
