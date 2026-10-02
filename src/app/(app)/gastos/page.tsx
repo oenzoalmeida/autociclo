@@ -2,13 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import type { Database } from '@/lib/database.types';
 import { formatCurrency, monthName } from '@/lib/format';
 import { Skeleton, EmptyState } from '@/components/ui/badge';
-
-type Expense = Database['public']['Tables']['expenses']['Row'];
-type MaintenanceRecord = Database['public']['Tables']['maintenance_records']['Row'];
-type Fuel = Database['public']['Tables']['fuel_records']['Row'];
 
 interface Cost {
   date: Date;
@@ -19,7 +14,6 @@ interface Cost {
 
 export default function ExpensesPage() {
   const [costs, setCosts] = useState<Cost[] | null>(null);
-  const [vehicleNames, setVehicleNames] = useState<Record<string, string>>({});
 
   useEffect(() => {
     const load = async () => {
@@ -27,16 +21,11 @@ export default function ExpensesPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const [vs, exps, recs, fuels] = await Promise.all([
-        supabase.from('vehicles').select('id, brand, model, nickname').eq('user_id', user.id).eq('archived', false),
+      const [exps, recs, fuels] = await Promise.all([
         supabase.from('expenses').select('*').eq('user_id', user.id),
         supabase.from('maintenance_records').select('*').eq('user_id', user.id),
         supabase.from('fuel_records').select('*').eq('user_id', user.id),
       ]);
-
-      const names: Record<string, string> = {};
-      (vs.data ?? []).forEach((v) => (names[v.id] = v.nickname || `${v.brand} ${v.model}`));
-      setVehicleNames(names);
 
       const list: Cost[] = [];
       (exps.data ?? []).forEach((e) => list.push({ date: new Date(e.expense_date), amount: Number(e.amount), category: e.category, label: e.description }));

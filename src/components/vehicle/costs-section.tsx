@@ -3,10 +3,10 @@
 import { useMemo, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import type { Database } from '@/lib/database.types';
-import { formatCurrency, formatDate, monthName } from '@/lib/format';
+import { formatCurrency, monthName } from '@/lib/format';
 import { Button } from '@/components/ui/button';
-import { Field, Input, Select, Textarea } from '@/components/ui/input';
-import { Modal, ConfirmDialog } from '@/components/ui/modal';
+import { Field, Input, Select } from '@/components/ui/input';
+import { Modal } from '@/components/ui/modal';
 import { EmptyState } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/toast';
 
@@ -31,9 +31,7 @@ export function CostsSection({
 }) {
   const [addOpen, setAddOpen] = useState(false);
   const [activeCat, setActiveCat] = useState<string>('all');
-  const { toast } = useToast();
-
-  const now = new Date();
+  const [now] = useState(() => new Date());
   const allCosts = useMemo(() => {
     const list: { date: Date; amount: number; label: string; category: string }[] = [];
     for (const e of expenses) {

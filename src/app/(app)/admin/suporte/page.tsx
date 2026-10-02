@@ -42,7 +42,9 @@ function SuporteAdmin() {
   };
 
   useEffect(() => {
-    load();
+    // Data loading intentionally hydrates client state after mount.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void load();
   }, []);
 
   const filtered = useMemo(() => {

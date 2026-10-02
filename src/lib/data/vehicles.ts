@@ -1,5 +1,3 @@
-import type { Database } from '@/lib/database.types';
-
 type Supabase = ReturnType<typeof import('@/lib/supabase/client').createClient>;
 
 // Cria o veículo e inicializa os itens de manutenção padrão do catálogo.

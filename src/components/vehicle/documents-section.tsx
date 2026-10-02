@@ -38,9 +38,12 @@ export function DocumentsSection({ vehicle, onChanged }: { vehicle: Vehicle; onC
   };
 
   useEffect(() => {
-    load();
+    // Data loading intentionally hydrates client state after mount.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void load();
+    // load is scoped to the current vehicle instance.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [vehicle.id]);
 
   const activeReminders = reminders?.filter((r) => !r.completed) ?? [];
   const completedReminders = reminders?.filter((r) => r.completed) ?? [];
