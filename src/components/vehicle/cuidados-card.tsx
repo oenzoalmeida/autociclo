@@ -35,7 +35,7 @@ export function CuidadosCard({ vehicle, computed }: { vehicle: Vehicle; computed
               <span className={`mt-0.5 h-2.5 w-2.5 shrink-0 rounded-full ${statusDot(c.status)}`} />
               <div className="flex-1">
                 <div className="font-semibold text-sm">{item.name}</div>
-                <div className="text-xs text-muted-foreground">{description(item, c, vehicle)}</div>
+                <div className="text-xs text-muted-foreground">{description(item, c)}</div>
               </div>
             </li>
           ))}
@@ -47,8 +47,7 @@ export function CuidadosCard({ vehicle, computed }: { vehicle: Vehicle; computed
 
 function description(
   item: Database['public']['Tables']['vehicle_maintenance_items']['Row'],
-  c: ReturnType<typeof computeItem>,
-  v: Vehicle
+  c: ReturnType<typeof computeItem>
 ): string {
   if (c.status === 'atrasado') {
     const parts: string[] = [];
