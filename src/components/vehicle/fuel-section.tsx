@@ -18,7 +18,7 @@ export function FuelSection({ vehicle, fuel, onChanged }: { vehicle: Vehicle; fu
   const [del, setDel] = useState<Fuel | null>(null);
 
   const fullTanks = useMemo(() => fuel.filter((f) => f.full_tank).sort((a, b) => new Date(a.fuel_date).getTime() - new Date(b.fuel_date).getTime()), [fuel]);
-  const mileage = vehicle.current_mileage;
+  const [now] = useState(() => Date.now());
 
   const stats = useMemo(() => {
     let totalLiters = 0;
@@ -40,15 +40,14 @@ export function FuelSection({ vehicle, fuel, onChanged }: { vehicle: Vehicle; fu
       totalCost += Number(f.total_cost);
     }
     const avgConsumption = litertUnion > 0 ? kmSum / litertUnion : null; // km/L
-    const costPerKm = totalLiters > 0 ? totalCost / (mileage || 1) : null; // R$/km (aprox)
     // gasto mensal (últimos 3 meses)
     const threeMonths = fuel.filter((f) => {
       const d = new Date(f.fuel_date);
-      return Date.now() - d.getTime() < 92 * 24 * 3600 * 1000;
+      return now - d.getTime() < 92 * 24 * 3600 * 1000;
     });
     const monthlyFuel = (threeMonths.reduce((s, f) => s + Number(f.total_cost), 0) / 3);
-    return { avgConsumption, costPerKm: null, monthlyFuel, totalLiters, totalCost };
-  }, [fullTanks, fuel, mileage]);
+    return { avgConsumption, monthlyFuel, totalLiters, totalCost };
+  }, [fullTanks, fuel, now]);
 
   const sorted = [...fuel].sort((a, b) => new Date(b.fuel_date).getTime() - new Date(a.fuel_date).getTime());
 
