@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import type { Database } from '@/lib/database.types';
-import { computeItem, STATUS_LABEL, statusColor, originLabel, usageLabel } from '@/lib/maintenance';
+import { computeItem, STATUS_LABEL, statusColor, originLabel } from '@/lib/maintenance';
 import { formatDate, formatNumber } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { Field, Input, Textarea } from '@/components/ui/input';
