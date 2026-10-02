@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: read
+  issues: write
 
 jobs:
   generate-lock:
@@ -19,9 +20,16 @@ jobs:
           cache: npm
       - name: Regenerate package-lock
         run: npm install --package-lock-only --ignore-scripts
-      - name: Publish lockfile
+      - name: Publish lockfile chunks to temporary issue
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          echo '## package-lock.json' >> "$GITHUB_STEP_SUMMARY"
-          echo '~~~json' >> "$GITHUB_STEP_SUMMARY"
-          cat package-lock.json >> "$GITHUB_STEP_SUMMARY"
-          echo '~~~' >> "$GITHUB_STEP_SUMMARY"
+          base64 -w0 package-lock.json > lock.b64
+          split -b 45000 -d -a 2 lock.b64 lockpart-
+          i=0
+          for f in lockpart-*; do
+            chunk="$(cat "$f")"
+            gh api repos/${GITHUB_REPOSITORY}/issues/12/comments -f body="LOCKPART:${i}:${chunk}"
+            i=$((i+1))
+          done
+          gh api repos/${GITHUB_REPOSITORY}/issues/12/comments -f body="LOCKDONE:${i}"
