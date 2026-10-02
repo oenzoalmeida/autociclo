@@ -6,7 +6,6 @@ import { createClient } from '@/lib/supabase/client';
 import { createVehicleWithDefaults } from '@/lib/data/vehicles';
 import { Logo } from '@/components/brand/logo';
 import { Button } from '@/components/ui/button';
-import { Modal } from '@/components/ui/modal';
 import {
   VehicleFormFields,
   emptyVehicle,
