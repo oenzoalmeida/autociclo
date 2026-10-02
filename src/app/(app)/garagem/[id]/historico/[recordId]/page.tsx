@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import type { Database } from '@/lib/database.types';
 import { formatCurrency, formatNumber } from '@/lib/format';
@@ -16,6 +16,7 @@ type Attachment = Database['public']['Tables']['attachments']['Row'];
 
 export default function RecordDetailPage() {
   const params = useParams<{ id: string; recordId: string }>();
+  const router = useRouter();
   const { toast } = useToast();
   const [rec, setRec] = useState<MaintenanceRecord | null>(null);
   const [items, setItems] = useState<RecordItem[]>([]);
@@ -56,7 +57,7 @@ export default function RecordDetailPage() {
     const supabase = createClient();
     await supabase.from('maintenance_records').delete().eq('id', rec.id);
     toast('Registro excluído.');
-    window.location.href = `/garagem/${params.id}/historico`;
+    router.push(`/garagem/${params.id}/historico`);
   };
 
   if (loading) return <Skeleton className="h-64 w-full" />;
