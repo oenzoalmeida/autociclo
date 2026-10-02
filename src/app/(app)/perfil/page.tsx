@@ -1,15 +1,16 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useTheme } from '@/components/theme/theme-provider';
 import { Button } from '@/components/ui/button';
 import { Field, Input } from '@/components/ui/input';
-import { Modal, ConfirmDialog } from '@/components/ui/modal';
+import { ConfirmDialog } from '@/components/ui/modal';
 import { useToast } from '@/components/ui/toast';
-import { Logo } from '@/components/brand/logo';
 
 export default function ProfilePage() {
+  const router = useRouter();
   const { theme, setTheme } = useTheme();
   const { toast } = useToast();
   const [name, setName] = useState('');
@@ -23,7 +24,6 @@ export default function ProfilePage() {
   const [savingPass, setSavingPass] = useState(false);
   const [passDone, setPassDone] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -39,7 +39,7 @@ export default function ProfilePage() {
       setLoading(false);
     };
     load();
-  }, []);
+  }, [setTheme]);
 
   const saveName = async () => {
     setSavingName(true);
@@ -100,7 +100,6 @@ export default function ProfilePage() {
   };
 
   const deleteAccount = async () => {
-    setDeleting(true);
     const supabase = createClient();
     // 1. Remove os arquivos do usuário no storage privado (arquivo físico + metadata)
     try {
@@ -115,10 +114,9 @@ export default function ProfilePage() {
     const { error } = await supabase.rpc('delete_current_user');
     if (error) {
       toast('Não foi possível excluir a conta.', 'error');
-      setDeleting(false);
       return;
     }
-    window.location.href = '/';
+    router.replace('/');
   };
 
   if (loading) return <div className="h-64 w-full animate-pulse rounded-xl bg-muted" />;
