@@ -3,14 +3,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
-import type { Database } from '@/lib/database.types';
 import { formatCurrency, formatDate, formatNumber } from '@/lib/format';
 import { Skeleton, EmptyState } from '@/components/ui/badge';
-
-type Vehicle = Database['public']['Tables']['vehicles']['Row'];
-type Item = Database['public']['Tables']['vehicle_maintenance_items']['Row'];
-type Doc = Database['public']['Tables']['vehicle_documents']['Row'];
-type Reminder = Database['public']['Tables']['reminders']['Row'];
 
 interface SearchResult {
   id: string;
@@ -109,7 +103,7 @@ export default function HistoryPage() {
     <div className="space-y-4">
       <h1 className="text-2xl font-extrabold">Histórico e busca</h1>
       <p className="text-sm text-muted-foreground">
-        Pesquise por serviço, oficina, ano, documento ou item — ex.: "óleo", "pastilha", "Auto Center", "2025".
+        Pesquise por serviço, oficina, ano, documento ou item — ex.: &quot;óleo&quot;, &quot;pastilha&quot;, &quot;Auto Center&quot;, &quot;2025&quot;.
       </p>
 
       <input
