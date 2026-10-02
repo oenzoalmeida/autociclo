@@ -71,7 +71,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const handleLogout = async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
-    window.location.href = '/login';
+    router.replace('/login');
   };
 
   if (isAdminArea) {
