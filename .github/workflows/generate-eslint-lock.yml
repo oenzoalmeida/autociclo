@@ -19,7 +19,9 @@ jobs:
           cache: npm
       - name: Regenerate package-lock
         run: npm install --package-lock-only --ignore-scripts
-      - uses: actions/upload-artifact@v4
-        with:
-          name: eslint-package-lock
-          path: package-lock.json
+      - name: Publish lockfile
+        run: |
+          echo '## package-lock.json' >> "$GITHUB_STEP_SUMMARY"
+          echo '~~~json' >> "$GITHUB_STEP_SUMMARY"
+          cat package-lock.json >> "$GITHUB_STEP_SUMMARY"
+          echo '~~~' >> "$GITHUB_STEP_SUMMARY"
