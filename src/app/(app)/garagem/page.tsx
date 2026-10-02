@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import type { Database } from '@/lib/database.types';
-import { computeItem, computeScore } from '@/lib/maintenance';
+import { computeItem } from '@/lib/maintenance';
 import { formatNumber } from '@/lib/format';
 import { Skeleton, EmptyState } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -48,10 +48,7 @@ export default function GaragePage() {
           .eq('vehicle_id', v.id);
         map[v.id] = items ?? [];
         const computed = (items ?? []).map((it) => computeItem(it, v.current_mileage));
-        const score = computeScore(computed);
         alerts[v.id] = computed.filter((c) => c.status === 'atrasado' || c.status === 'atencao').length;
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        void score;
       }
     }
     setItemsByVehicle(map);
@@ -59,7 +56,9 @@ export default function GaragePage() {
   }, []);
 
   useEffect(() => {
-    load();
+    // Data loading intentionally hydrates client state after mount.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void load();
   }, [load]);
 
   const add = async () => {
