@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 import type { Database } from '@/lib/database.types';
@@ -10,11 +11,11 @@ import { Skeleton } from '@/components/ui/badge';
 
 type Vehicle = Database['public']['Tables']['vehicles']['Row'];
 type Item = Database['public']['Tables']['vehicle_maintenance_items']['Row'];
-type Expense = Database['public']['Tables']['expenses']['Row'];
 type Notif = Database['public']['Tables']['notifications']['Row'];
 type MaintenanceRecord = Database['public']['Tables']['maintenance_records']['Row'];
 
 export default function HomePage() {
+  const router = useRouter();
   const [name, setName] = useState('');
   const [vehicles, setVehicles] = useState<Vehicle[] | null>(null);
   const [details, setDetails] = useState<Record<string, { items: Item[]; notices: Notif[]; monthExpenses: number }>>({});
@@ -30,7 +31,7 @@ export default function HomePage() {
         setName(prof?.name?.split(' ')[0] ?? '');
         const { data: isAdmin } = await supabase.rpc('is_admin');
         if (!isAdmin && prof && !prof.onboarded) {
-          window.location.href = '/onboarding';
+          router.push('/onboarding');
           return;
         }
       }
@@ -72,7 +73,7 @@ export default function HomePage() {
       setLoading(false);
     };
     load();
-  }, []);
+  }, [router]);
 
   if (loading) {
     return (
