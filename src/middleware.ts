@@ -71,6 +71,9 @@ export async function updateSession(request: NextRequest) {
 }
 
 export async function middleware(request: NextRequest) {
+  if (request.nextUrl.pathname === '/api/health') {
+    return NextResponse.next();
+  }
   return await updateSession(request);
 }
 
