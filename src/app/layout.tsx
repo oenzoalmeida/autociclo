@@ -10,13 +10,18 @@ const sans = Plus_Jakarta_Sans({
   display: 'swap',
 });
 
+const siteUrl = 'https://autociclo.vercel.app';
+const siteTitle = 'AutoCiclo — Seu carro em dia, sempre.';
+const siteDescription =
+  'AutoCiclo é o prontuário digital do seu carro. Manutenções, revisões, gastos, documentos e todo o histórico do seu veículo em um só lugar.';
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: {
-    default: 'AutoCiclo — Seu carro em dia, sempre.',
+    default: siteTitle,
     template: '%s · AutoCiclo',
   },
-  description:
-    'AutoCiclo é o prontuário digital do seu carro. Manutenções, revisões, gastos, documentos e todo o histórico do seu veículo em um só lugar.',
+  description: siteDescription,
   applicationName: 'AutoCiclo',
   manifest: '/manifest.webmanifest',
   icons: {
@@ -29,6 +34,31 @@ export const metadata: Metadata = {
     title: 'AutoCiclo',
   },
   formatDetection: { telephone: false },
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    type: 'website',
+    url: siteUrl,
+    siteName: 'AutoCiclo',
+    title: siteTitle,
+    description: siteDescription,
+    locale: 'pt_BR',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'AutoCiclo — o prontuário digital do seu carro',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: siteTitle,
+    description: siteDescription,
+    images: ['/og-image.png'],
+  },
 };
 
 export const viewport: Viewport = {
