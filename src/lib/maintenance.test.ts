@@ -9,6 +9,14 @@ type Mileage = Database['public']['Tables']['mileage_records']['Row'];
 // conforme o dia em que a suíte roda.
 const HOJE = new Date('2026-06-15T00:00:00Z');
 
+// computeItem lê o relógio só em Date.now(); as outras chamadas a Date recebem
+// argumento explícito. Fixar apenas Date.now é mais direto que ligar os fake
+// timers inteiros, e não depende de quais globais a versão do vitest resolve
+// substituir por padrão.
+function congelarRelogio() {
+  vi.spyOn(Date, 'now').mockReturnValue(HOJE.getTime());
+}
+
 function item(overrides: Partial<Item> = {}): Item {
   return {
     id: '1',
@@ -129,13 +137,15 @@ describe('computeItem — previsão por quilometragem', () => {
 });
 
 describe('computeItem — previsão por tempo', () => {
-  beforeEach(() => {
-    vi.useFakeTimers();
-    vi.setSystemTime(HOJE);
+  beforeEach(congelarRelogio);
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
-  afterEach(() => {
-    vi.useRealTimers();
+  it('o relógio está realmente congelado na data do teste', () => {
+    // Guarda: se o congelamento parar de funcionar, a falha aponta para a
+    // causa em vez de aparecer como vários prazos errados sem explicação.
+    expect(Date.now()).toBe(HOJE.getTime());
   });
 
   it('em_dia logo após a manutenção', () => {
@@ -174,13 +184,9 @@ describe('computeItem — previsão por tempo', () => {
 });
 
 describe('computeItem — combinação de km e tempo', () => {
-  beforeEach(() => {
-    vi.useFakeTimers();
-    vi.setSystemTime(HOJE);
-  });
-
+  beforeEach(congelarRelogio);
   afterEach(() => {
-    vi.useRealTimers();
+    vi.restoreAllMocks();
   });
 
   it('vale o pior dos dois: km em dia e prazo vencido dá atrasado', () => {
