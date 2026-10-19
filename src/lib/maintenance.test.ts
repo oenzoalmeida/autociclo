@@ -170,9 +170,18 @@ describe('computeItem — previsão por tempo', () => {
 
   it('atrasado depois do vencimento', () => {
     const c = porTempo('2025-12-01');
-    expect(c.dueDate).toBe('2026-05-31');
-    expect(c.daysLeft).toBe(-15);
+    expect(c.dueDate).toBe('2026-06-01');
+    expect(c.daysLeft).toBe(-14);
     expect(c.status).toBe('atrasado');
+  });
+
+  it('calcula a data de vencimento em UTC, sem depender do fuso da máquina', () => {
+    // Regressão: a soma dos meses usava getMonth/setMonth, que são locais,
+    // enquanto a data entra e sai em UTC. Rodando em UTC-3 este caso dava
+    // 31/05. Os valores abaixo são os mesmos em qualquer fuso.
+    expect(porTempo('2025-12-01').dueDate).toBe('2026-06-01');
+    expect(porTempo('2026-06-15').dueDate).toBe('2026-12-15');
+    expect(computeItem(item({ last_done_date: '2026-03-01', interval_months: 3 }), 0).dueDate).toBe('2026-06-01');
   });
 
   it('documenta o transbordo de mês do JavaScript em datas no fim do mês', () => {

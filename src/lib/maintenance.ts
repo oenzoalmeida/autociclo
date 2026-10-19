@@ -59,7 +59,14 @@ export function computeItem(
   if (hasTime) {
     const last = new Date(item.last_done_date as string);
     const due = new Date(last);
-    due.setMonth(due.getMonth() + (item.interval_months as number));
+    // Aritmética em UTC, não em hora local. A data vem como 'AAAA-MM-DD' e é
+    // lida como meia-noite UTC, e o resultado sai por toISOString, também UTC.
+    // Com getMonth/setMonth, que são locais, o cálculo passava por um fuso
+    // diferente no meio do caminho: em UTC-3, '2025-12-01' + 6 meses dava
+    // 31/05 em vez de 01/06. Isso fazia a mesma manutenção vencer em datas
+    // diferentes conforme o fuso do dispositivo — e divergir entre o servidor,
+    // que roda em UTC, e o navegador do usuário.
+    due.setUTCMonth(due.getUTCMonth() + (item.interval_months as number));
     dueDate = due.toISOString().slice(0, 10);
     daysLeft = Math.ceil((due.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
     timeStatus = statusFromRemaining(daysLeft, (item.interval_months as number) * 30);
