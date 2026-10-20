@@ -17,7 +17,17 @@ export interface ItemComputed {
   estimated: boolean; // se usa estimativa geral (sem histórico completo)
 }
 
-const WARN_PCT = 0.9; // entra em atenção quando passa 90% do intervalo
+// Entra em atenção quando resta 10% ou menos do intervalo.
+// Escrito como razão do que resta (0.1) e não como 1 - 0.9: em ponto flutuante
+// 1 - 0.9 vale 0.09999999999999998, e um intervalo de 10.000 km passava a avisar
+// em 999,99 km em vez de 1.000 km, deixando o limiar exato de fora.
+const WARN_REMAINING_RATIO = 0.1;
+
+function statusFromRemaining(remaining: number, interval: number): ItemStatus {
+  if (remaining < 0) return 'atrasado';
+  if (remaining <= interval * WARN_REMAINING_RATIO) return 'atencao';
+  return 'em_dia';
+}
 
 export function computeItem(
   item: MaintenanceItem,
@@ -42,10 +52,6 @@ export function computeItem(
   if (hasKm) {
     dueKm = (item.last_done_mileage as number) + (item.interval_km as number);
     kmDistance = dueKm - currentMileage;
-    if (kmDistance < 0) status = 'atrasado';
-    else if (kmDistance <= (kmDistance >= 0 ? item.interval_km! * (1 - WARN_PCT) : 0)) {
-      // dentro da janela de atenção
-    }
   }
 
   // Próxima previsão por tempo
@@ -53,24 +59,31 @@ export function computeItem(
   if (hasTime) {
     const last = new Date(item.last_done_date as string);
     const due = new Date(last);
-    due.setMonth(due.getMonth() + (item.interval_months as number));
+    // Aritmética em UTC, não em hora local. A data vem como 'AAAA-MM-DD' e é
+    // lida como meia-noite UTC, e o resultado sai por toISOString, também UTC.
+    // Com getMonth/setMonth, que são locais, o cálculo passava por um fuso
+    // diferente no meio do caminho: em UTC-3, '2025-12-01' + 6 meses dava
+    // 31/05 em vez de 01/06. Isso fazia a mesma manutenção vencer em datas
+    // diferentes conforme o fuso do dispositivo — e divergir entre o servidor,
+    // que roda em UTC, e o navegador do usuário.
+    due.setUTCMonth(due.getUTCMonth() + (item.interval_months as number));
     dueDate = due.toISOString().slice(0, 10);
     daysLeft = Math.ceil((due.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-
-    if (daysLeft < 0) timeStatus = 'atrasado';
-    else if (daysLeft <= (item.interval_months! * 30 * (1 - WARN_PCT))) timeStatus = 'atencao';
-    else timeStatus = 'em_dia';
+    timeStatus = statusFromRemaining(daysLeft, (item.interval_months as number) * 30);
   }
 
-  // Combina produtório de respostas
-  if (!kmDistance && !daysLeft) {
+  // Combina as duas previsões pelo pior caso.
+  // A comparação é com null, não com valor falso: faltar exatamente 0 km, ou
+  // vencer hoje, é informação — e antes caía em 'sem_info' junto com a ausência
+  // de dados, fazendo o item sumir do alerta no dia em que ele vence.
+  if (kmDistance === null && daysLeft === null) {
     status = 'sem_info';
   } else {
     const candidates: ItemStatus[] = [];
     if (kmDistance !== null) {
-      candidates.push(kmDistance < 0 ? 'atrasado' : kmDistance <= item.interval_km! * (1 - WARN_PCT) ? 'atencao' : 'em_dia');
+      candidates.push(statusFromRemaining(kmDistance, item.interval_km as number));
     }
-    if (daysLeft !== null && timeStatus) candidates.push(timeStatus);
+    if (timeStatus) candidates.push(timeStatus);
 
     if (candidates.includes('atrasado')) status = 'atrasado';
     else if (candidates.includes('atencao')) status = 'atencao';
