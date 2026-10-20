@@ -16,6 +16,10 @@ O AutoCiclo acompanha a manutenção preventiva do veículo como um prontuário:
 
 O conceito de **AutoCiclo Score** (0–100) representa o nível de organização das manutenções cadastradas. O indicador não é um diagnóstico mecânico.
 
+### Intervalos mensais no fim do mês
+
+O vencimento por intervalo mensal preserva o ajuste de calendário do JavaScript. Quando o mês de destino não possui o dia original, os dias excedentes avançam para o mês seguinte. Por exemplo, uma manutenção feita em 31/01/2026 com intervalo de um mês vence em 03/03/2026. Em um ano bissexto, 31/01/2024 mais um mês resulta em 02/03/2024. O vencimento não é limitado ao último dia de fevereiro. Essa regra foi confirmada pelo responsável pelo produto e está coberta pelos testes de calendário.
+
 ## Principais funcionalidades
 
 **Autenticação**: cadastro, login, logout, recuperação de senha, confirmação de e-mail e sessão persistente.
