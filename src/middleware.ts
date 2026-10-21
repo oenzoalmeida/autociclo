@@ -49,6 +49,11 @@ export async function updateSession(request: NextRequest) {
   const isAsset = pathname.startsWith('/_next') || pathname.includes('.');
   const isProtected = !isPublic && !isAsset;
 
+  // Áreas autenticadas não devem ser indexadas por buscadores
+  if (isProtected && user) {
+    supabaseResponse.headers.set('X-Robots-Tag', 'noindex, nofollow');
+  }
+
   // Rotas de aplicação exigem usuário autenticado
   if (isProtected && !user) {
     const url = request.nextUrl.clone();
