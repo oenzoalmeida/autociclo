@@ -39,9 +39,65 @@ const features = [
   },
 ];
 
+const FAQ = [
+  {
+    q: 'O que é o AutoCiclo?',
+    a: 'É o prontuário digital do seu carro: manutenções, revisões, quilometragem, gastos, documentos e alertas organizados em um só lugar, com histórico completo do veículo.',
+  },
+  {
+    q: 'O AutoCiclo é gratuito?',
+    a: 'Sim. Você pode criar sua conta e cadastrar seus veículos gratuitamente.',
+  },
+  {
+    q: 'Preciso entender de mecânica para usar?',
+    a: 'Não. A plataforma usa linguagem simples e um catálogo inicial de itens (óleo, filtros, freios, pneus, correias e outros) para você registrar cada serviço sem jargão complicado.',
+  },
+  {
+    q: 'Posso controlar mais de um veículo?',
+    a: 'Sim. Sua conta possui uma garagem com espaço para múltiplos veículos, cada um com seu próprio histórico e painel.',
+  },
+  {
+    q: 'Meus dados estão protegidos?',
+    a: 'Sim. Os dados ficam isolados por conta no banco (Row Level Security) e os arquivos que você anexa são guardados em armazenamento privado. Consulte a Política de Privacidade para mais detalhes.',
+  },
+  {
+    q: 'Funciona no celular?',
+    a: 'Sim. O AutoCiclo é mobile first, com navegação inferior no celular, e também pode ser instalado como aplicativo (PWA).',
+  },
+];
+
 export default function LandingPage() {
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: 'AutoCiclo',
+    applicationCategory: 'AutomotiveApplication',
+    operatingSystem: 'Web',
+    url: 'https://autociclo.vercel.app',
+    description:
+      'Prontuário digital do seu carro: manutenções, revisões, gastos, documentos e histórico do veículo em um só lugar.',
+    inLanguage: 'pt-BR',
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'BRL' },
+  };
+  const faqJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: FAQ.map((item) => ({
+      '@type': 'Question',
+      name: item.q,
+      acceptedAnswer: { '@type': 'Answer', text: item.a },
+    })),
+  };
   return (
     <div className="min-h-screen bg-white text-slate-900 dark:bg-[hsl(var(--background))] dark:text-slate-100">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
       <Header />
 
       {/* Hero */}
@@ -174,6 +230,33 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Perguntas frequentes */}
+      <section id="faq" className="border-t border-border bg-white py-20 dark:bg-[hsl(var(--card))]">
+        <div className="container-page max-w-3xl">
+          <h2 className="text-center text-3xl font-extrabold tracking-tight sm:text-4xl">
+            Perguntas frequentes
+          </h2>
+          <div className="mt-10 space-y-3">
+            {FAQ.map((item) => (
+              <details key={item.q} className="card group p-5">
+                <summary className="cursor-pointer list-none font-semibold marker:hidden">
+                  <span className="flex items-center justify-between gap-4">
+                    {item.q}
+                    <span
+                      aria-hidden="true"
+                      className="text-brand-600 transition-transform group-open:rotate-45 dark:text-brand-400"
+                    >
+                      +
+                    </span>
+                  </span>
+                </summary>
+                <p className="mt-3 text-sm text-muted-foreground">{item.a}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="border-t border-border py-10">
         <div className="container-page flex flex-col items-center justify-between gap-4 sm:flex-row">
@@ -227,6 +310,9 @@ function Header() {
         <nav className="hidden items-center gap-1 sm:flex">
           <a href="#conhecer" className="btn-ghost">
             Conhecer
+          </a>
+          <a href="#faq" className="btn-ghost">
+            Dúvidas
           </a>
           <Link href="/login" className="btn-ghost">
             Entrar
