@@ -19,6 +19,8 @@ jobs:
       - run: npm ci
       - name: Audit production dependencies
         run: npm audit --omit=dev --audit-level=moderate
+      - name: Audit development and build dependencies
+        run: npm audit --audit-level=moderate
       - run: npm run typecheck
       - run: npm run lint
       - run: npm test
