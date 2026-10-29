@@ -50,7 +50,7 @@ O vencimento por intervalo mensal preserva o ajuste de calendário do JavaScript
 
 ## Tecnologias
 
-[Next.js 15](https://nextjs.org/) (App Router) + TypeScript.
+[Next.js 16](https://nextjs.org/) (App Router) + TypeScript.
 
 Tailwind CSS.
 
