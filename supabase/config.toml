@@ -1,0 +1,3 @@
+# Config mínima para o job de CI `supabase` (stack local descartável no runner).
+# Não é usada em produção: o projeto real roda no Supabase Cloud.
+project_id = "autociclo-ci"
