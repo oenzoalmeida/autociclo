@@ -29,3 +29,13 @@ jobs:
         env:
           NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-key
+
+  supabase:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: supabase/setup-cli@v1
+      - name: Subir stack local descartável (Docker do runner)
+        run: supabase start
+      - name: Smoke test das migrações via PostgREST
+        run: node scripts/supabase-smoke.mjs
