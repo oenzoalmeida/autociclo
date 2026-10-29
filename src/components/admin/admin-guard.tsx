@@ -9,12 +9,14 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<'loading' | 'denied' | 'ok'>('loading');
 
   useEffect(() => {
+    let active = true;
     const check = async () => {
       const supabase = createClient();
       const { data, error } = await supabase.rpc('is_admin');
-      setState(!error && data ? 'ok' : 'denied');
+      if (active) setState(!error && data ? 'ok' : 'denied');
     };
-    check();
+    void check();
+    return () => { active = false; };
   }, []);
 
   if (state === 'loading') return <Skeleton className="h-64 w-full" />;
