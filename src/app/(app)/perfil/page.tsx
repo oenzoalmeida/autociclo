@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { buildDataExport } from '@/lib/export-data';
 import { useTheme } from '@/components/theme/theme-provider';
 import { Button } from '@/components/ui/button';
 import { Field, Input } from '@/components/ui/input';
@@ -79,15 +80,12 @@ export default function ProfilePage() {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-    const tables = ['vehicles', 'mileage_records', 'maintenance_records', 'maintenance_record_items', 'vehicle_maintenance_items', 'expenses', 'fuel_records', 'vehicle_documents', 'attachments', 'reminders', 'notifications', 'activity_logs'];
-    let out = '# AutoCiclo — Dados exportados\n\n';
-    out += `Exportado em: ${new Date().toLocaleString('pt-BR')}\n\n`;
-    for (const t of tables) {
-      const { data } = await supabase.from(t).select('*').eq('user_id', user.id).order('created_at');
-      if (data && data.length) {
-        out += `\n## ${t}\n\n`;
-        out += JSON.stringify(data, null, 2) + '\n';
-      }
+    let out: string;
+    try {
+      out = await buildDataExport(supabase, user.id);
+    } catch {
+      toast('Não foi possível exportar todos os dados. Tente novamente.', 'error');
+      return;
     }
     const blob = new Blob([out], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
