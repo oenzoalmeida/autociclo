@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import type { Database } from '@/lib/database.types';
+import { forcedChangeRedirect } from '@/lib/forced-change';
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -70,6 +71,19 @@ export async function updateSession(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = '/home';
     return NextResponse.redirect(url);
+  }
+
+  // Troca obrigatória de senha: reflete na navegação o bloqueio que o banco
+  // já impõe (is_admin nega enquanto a flag estiver ativa).
+  if (user) {
+    const { data: mustChange } = await supabase.rpc('must_change_password');
+    const target = forcedChangeRedirect({ loggedIn: true, mustChange: mustChange === true, pathname });
+    if (target) {
+      const url = request.nextUrl.clone();
+      url.pathname = target;
+      url.search = '';
+      return NextResponse.redirect(url);
+    }
   }
 
   return supabaseResponse;
