@@ -10,6 +10,12 @@ Aplicação web responsiva/PWA construída em Next.js com TypeScript e Supabase 
 
 > Projeto de portfólio hospedado em planos gratuitos (Vercel/Supabase): o primeiro acesso pode ser mais lento e os dados podem ser removidos a qualquer momento. O painel administrativo é de uso interno do autor. Cadastros pela página pública são criados como Cliente.
 
+## Capturas de tela
+
+| Página inicial | Recursos |
+|---|---|
+| ![Página inicial do AutoCiclo](docs/screenshots/inicio.png) | ![Seção de recursos](docs/screenshots/recursos.png) |
+
 ## Sobre o projeto
 
 O AutoCiclo acompanha a manutenção preventiva do veículo como um prontuário: múltiplos carros por conta, registro de quilometragem com histórico, manutenções com catálogo inicial de itens (óleo, filtros, freios, pneus, correias etc.) ou itens personalizados, status de cada item (Em dia, Atenção, Atrasado, Sem informações), linha do tempo, controle de gastos por categoria, alertas e relatório imprimível.
