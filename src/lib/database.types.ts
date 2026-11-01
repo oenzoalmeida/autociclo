@@ -397,15 +397,18 @@ export type Database = {
         Row: {
           user_id: string;
           role: string;
+          must_change_password: boolean;
           created_at: string;
           updated_at: string;
         };
         Insert: {
           user_id: string;
           role?: string;
+          must_change_password?: boolean;
         };
         Update: {
           role?: string;
+          must_change_password?: boolean;
         };
       };
       support_tickets: {
@@ -501,6 +504,10 @@ export type Database = {
         Returns: undefined;
       };
       is_admin: {
+        Args: Record<PropertyKey, never>;
+        Returns: boolean;
+      };
+      must_change_password: {
         Args: Record<PropertyKey, never>;
         Returns: boolean;
       };
