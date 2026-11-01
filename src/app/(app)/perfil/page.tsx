@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { buildUserDataExport } from '@/lib/export-data';
 import { useTheme } from '@/components/theme/theme-provider';
 import { Button } from '@/components/ui/button';
 import { Field, Input } from '@/components/ui/input';
@@ -79,33 +80,7 @@ export default function ProfilePage() {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-    const tables = ['vehicles', 'mileage_records', 'maintenance_records', 'vehicle_maintenance_items', 'expenses', 'fuel_records', 'vehicle_documents', 'attachments', 'reminders', 'notifications', 'activity_logs'] as const;
-    let out = '# AutoCiclo — Dados exportados\n\n';
-    out += `Exportado em: ${new Date().toLocaleString('pt-BR')}\n\n`;
-    for (const t of tables) {
-      const { data } = await supabase.from(t).select('*').eq('user_id', user.id).order('created_at');
-      if (data && data.length) {
-        out += `\n## ${t}\n\n`;
-        out += JSON.stringify(data, null, 2) + '\n';
-      }
-    }
-    // maintenance_record_items não tem user_id: filtra pelos registros do usuário
-    const { data: userRecords } = await supabase
-      .from('maintenance_records')
-      .select('id')
-      .eq('user_id', user.id);
-    const recordIds = (userRecords ?? []).map((r) => r.id);
-    if (recordIds.length) {
-      const { data } = await supabase
-        .from('maintenance_record_items')
-        .select('*')
-        .in('record_id', recordIds)
-        .order('created_at');
-      if (data && data.length) {
-        out += `\n## maintenance_record_items\n\n`;
-        out += JSON.stringify(data, null, 2) + '\n';
-      }
-    }
+    const out = await buildUserDataExport(supabase, user.id);
     const blob = new Blob([out], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
