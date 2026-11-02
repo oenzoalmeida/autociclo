@@ -51,6 +51,10 @@ export default function ManutencoesPage() {
       <div>
         <h1 className="text-2xl font-extrabold">Manutenções</h1>
         <p className="text-sm text-muted-foreground">Todos os itens de manutenção da sua garagem.</p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          As previsões são estimativas calculadas a partir da quilometragem, das datas e do tipo de uso que você
+          registra — não substituem o manual do veículo nem a avaliação de um profissional.
+        </p>
       </div>
 
       {rows.length === 0 ? (
@@ -73,9 +77,13 @@ export default function ManutencoesPage() {
                 <div className="truncate text-xs text-muted-foreground">
                   {v.nickname || `${v.brand} ${v.model}`}
                   {c.dueKm !== null
-                    ? ` · próximo em ${formatNumber(c.dueKm)} km`
+                    ? c.estimated
+                      ? ` · estimativa: ~${formatNumber(c.dueKm)} km`
+                      : ` · próximo em ~${formatNumber(c.dueKm)} km`
                     : c.dueDate
-                    ? ` · próximo em ${formatDate(c.dueDate)}`
+                    ? c.estimated
+                      ? ` · estimativa: ${formatDate(c.dueDate)}`
+                      : ` · próximo em ${formatDate(c.dueDate)}`
                     : ' · sem previsão'}
                 </div>
               </div>
