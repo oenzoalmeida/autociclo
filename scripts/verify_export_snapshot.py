@@ -4,10 +4,16 @@
 Sobe um Postgres descartável (pgserver), aplica as migrações do repositório
 com stubs mínimos dos schemas auth/storage do Supabase e prova:
 
-1. Consistência de snapshot: sob escritas concorrentes (registro pai e item
-   filho commitados em transações separadas), a função em UM comando SQL não
-   retorna item órfão de registro; uma variante de controle com VÁRIOS
-   comandos (READ COMMITTED = um snapshot por comando) exibe a violação.
+1. Consistência de snapshot: o escritor commita o registro pai PRIMEIRO e o
+   item filho DEPOIS (transações separadas). Nessa ordem, qualquer leitura de
+   snapshot único que contenha o filho contém necessariamente o pai (o pai
+   commitou antes); logo "filho sem pai" é um estado impossível em qualquer
+   snapshot coerente — e é exatamente a violação que READ COMMITTED permite
+   entre comandos distintos (cada comando tem seu snapshot). A função real em
+   UM comando SQL retornou 0 violações; a variante de controle com VÁRIOS
+   comandos exibiu a violação. O teste cobre inserções concorrentes no par
+   maintenance_records/maintenance_record_items; não mede outros tipos de
+   concorrência (updates/deletes) nem outras tabelas.
 2. Isolamento: dono A vê só os dados de A; outro dono B idem; um admin NÃO
    recebe dados de terceiros (filtro explícito user_id = auth.uid(), mesmo
    com papel admin); papel anon não executa a função.
@@ -194,6 +200,10 @@ def main():
 
     t = threading.Thread(target=writer)
     t.start()
+    # Invariante verificado: todo item retornado tem o registro pai no mesmo
+    # resultado. Com o escritor commitando pai->filho, esse é o único estado
+    # impossível num snapshot único — logo 0 violações é a prova, e as
+    # violações do controle provam que a janela multi-comando existe.
     snap_viol = multi_viol = 0
     rounds = 200
     with psycopg.connect(uri) as c:
