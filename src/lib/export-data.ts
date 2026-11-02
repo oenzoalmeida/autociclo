@@ -3,7 +3,10 @@ import type { Database } from '@/lib/database.types';
 
 type Client = SupabaseClient<Database, 'public'>;
 
-const USER_TABLES = [
+// Ordem das seções no arquivo exportado. A lista de tabelas e o isolamento por
+// usuário vivem na função SQL export_user_data_snapshot
+// (supabase/migrations/00009_export_user_data_snapshot.sql).
+const TABLE_ORDER = [
   'vehicles',
   'mileage_records',
   'maintenance_records',
@@ -15,50 +18,32 @@ const USER_TABLES = [
   'reminders',
   'notifications',
   'activity_logs',
+  'maintenance_record_items',
 ] as const;
 
-// Page conservatively, but advance by the actual row count so a lower server
-// response cap does not silently truncate an export. A final empty page ends it.
-const PAGE_SIZE = 500;
-const RECORD_BATCH_SIZE = 100;
-
-async function readAll<T>(
-  table: string,
-  page: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: unknown }>
-): Promise<T[]> {
-  const rows: T[] = [];
-  while (true) {
-    const { data, error } = await page(rows.length, rows.length + PAGE_SIZE - 1);
-    if (error || !data) throw new Error(`Não foi possível exportar ${table}. Tente novamente.`);
-    if (data.length === 0) return rows;
-    rows.push(...data);
-  }
-}
-
-// Queries remain user-scoped under RLS. No file is returned on partial failure.
-// Pagination is deterministic, but it is not a database-wide snapshot: concurrent
-// edits during export may still require a future server-side snapshot endpoint.
+// A exportação usa a RPC export_user_data_snapshot: uma única chamada, uma
+// única transação, uma fotografia consistente do banco (sem mistura de
+// instantes por edições concorrentes). Não existe fallback para a leitura
+// paginada anterior — várias requisições não garantem o mesmo instante, e um
+// arquivo assim não pode ser rotulado de snapshot. Se a RPC falhar, nenhum
+// arquivo é gerado (fail closed).
 export async function buildUserDataExport(
   supabase: Client,
-  userId: string,
   exportedAt: Date = new Date()
 ): Promise<string> {
+  const { data, error } = await supabase.rpc('export_user_data_snapshot');
+  if (error || data === null || typeof data !== 'object' || Array.isArray(data)) {
+    throw new Error('Não foi possível gerar o snapshot dos dados. Nenhum arquivo foi gerado.');
+  }
+  const snapshot = data as Record<string, unknown>;
+
   let out = '# AutoCiclo - Dados exportados\n\n';
   out += `Exportado em: ${exportedAt.toLocaleString('pt-BR')}\n\n`;
-  const recordIds: string[] = [];
-  for (const table of USER_TABLES) {
-    const data = await readAll(table, (from, to) => supabase.from(table)
-      .select('*').eq('user_id', userId).order('created_at').order('id').range(from, to));
-    if (table === 'maintenance_records') recordIds.push(...data.map((row) => row.id));
-    if (data.length) out += `\n## ${table}\n\n${JSON.stringify(data, null, 2)}\n`;
+  out += 'Fotografia única do banco no instante da exportação (transação única).\n';
+  for (const table of TABLE_ORDER) {
+    const rows = snapshot[table];
+    if (!Array.isArray(rows) || rows.length === 0) continue;
+    out += `\n## ${table}\n\n${JSON.stringify(rows, null, 2)}\n`;
   }
-  const items = [];
-  for (let start = 0; start < recordIds.length; start += RECORD_BATCH_SIZE) {
-    const ids = recordIds.slice(start, start + RECORD_BATCH_SIZE);
-    items.push(...await readAll('maintenance_record_items', (from, to) => supabase
-      .from('maintenance_record_items').select('*').in('record_id', ids)
-      .order('created_at').order('id').range(from, to)));
-  }
-  if (items.length) out += `\n## maintenance_record_items\n\n${JSON.stringify(items, null, 2)}\n`;
   return out;
 }

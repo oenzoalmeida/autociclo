@@ -83,7 +83,7 @@ export default function ProfilePage() {
       const supabase = createClient();
       const { data: { user }, error } = await supabase.auth.getUser();
       if (error || !user) throw new Error('Sua sessão expirou. Entre novamente para exportar.');
-      const out = await buildUserDataExport(supabase, user.id);
+      const out = await buildUserDataExport(supabase);
       const blob = new Blob([out], { type: 'text/markdown' });
       const url = URL.createObjectURL(blob);
       try {
