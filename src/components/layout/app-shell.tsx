@@ -82,7 +82,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <Link href="/admin" className="mb-8 flex items-center gap-2.5 px-2">
             <LogoMark size={32} />
             <span className="text-lg font-extrabold">
-              Auto<span className="text-brand-600 dark:text-brand-400">Ciclo</span>
+              Auto<span className="text-brand-700 dark:text-brand-400">Ciclo</span>
             </span>
           </Link>
           <span className="mb-2 px-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Administração</span>
@@ -104,11 +104,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         </aside>
 
         {/* Conteúdo admin */}
-        <div className="md:pl-64">
+        <main className="md:pl-64">
           <div className="mx-auto w-full max-w-4xl px-4 pb-24 pt-6 sm:px-6 md:pb-16 md:pt-8">
             {children}
           </div>
-        </div>
+        </main>
 
         {/* Bottom nav admin (mobile) */}
         <nav className="pb-safe fixed inset-x-0 bottom-0 z-40 border-t border-border bg-white/95 backdrop-blur dark:bg-slate-900/95 md:hidden">
@@ -143,7 +143,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         <Link href="/home" className="mb-8 flex items-center gap-2.5 px-2">
           <LogoMark size={32} />
           <span className="text-lg font-extrabold">
-            Auto<span className="text-brand-600 dark:text-brand-400">Ciclo</span>
+            Auto<span className="text-brand-700 dark:text-brand-400">Ciclo</span>
           </span>
         </Link>
         <nav className="flex flex-col gap-1">
@@ -166,11 +166,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Conteúdo cliente */}
-      <div className="md:pl-64">
+      <main className="md:pl-64">
         <div className="mx-auto w-full max-w-3xl px-4 pb-24 pt-6 sm:px-6 md:pb-16 md:pt-8">
           {children}
         </div>
-      </div>
+      </main>
 
       {/* Bottom nav mobile cliente */}
       <nav className="pb-safe fixed inset-x-0 bottom-0 z-40 border-t border-border bg-white/95 backdrop-blur dark:bg-slate-900/95 md:hidden">
