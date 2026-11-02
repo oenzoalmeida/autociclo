@@ -9,12 +9,14 @@ import { NextRequest } from 'next/server';
  */
 
 const getUserMock = vi.fn();
+const rpcMock = vi.fn();
 
 vi.mock('@supabase/ssr', () => ({
   createServerClient: vi.fn(() => ({
     auth: {
       getUser: getUserMock,
     },
+    rpc: rpcMock,
   })),
 }));
 
@@ -35,6 +37,8 @@ beforeEach(() => {
   vi.stubEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY', env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
   getUserMock.mockReset();
   getUserMock.mockResolvedValue({ data: { user: null } });
+  rpcMock.mockReset();
+  rpcMock.mockResolvedValue({ data: false });
 });
 
 describe('proxy / updateSession — rotas protegidas', () => {
