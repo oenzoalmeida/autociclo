@@ -24,6 +24,7 @@ export default function ProfilePage() {
   const [confirmPass, setConfirmPass] = useState('');
   const [savingPass, setSavingPass] = useState(false);
   const [passDone, setPassDone] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   useEffect(() => {
@@ -77,18 +78,28 @@ export default function ProfilePage() {
   };
 
   const exportData = async () => {
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    const out = await buildUserDataExport(supabase, user.id);
-    const blob = new Blob([out], { type: 'text/markdown' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `autociclo-export-${user.id.slice(0, 8)}.md`;
-    a.click();
-    URL.revokeObjectURL(url);
-    toast('Dados exportados.');
+    setExporting(true);
+    try {
+      const supabase = createClient();
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (error || !user) throw new Error('Sua sessão expirou. Entre novamente para exportar.');
+      const out = await buildUserDataExport(supabase, user.id);
+      const blob = new Blob([out], { type: 'text/markdown' });
+      const url = URL.createObjectURL(blob);
+      try {
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `autociclo-export-${user.id.slice(0, 8)}.md`;
+        a.click();
+      } finally {
+        URL.revokeObjectURL(url);
+      }
+      toast('Dados exportados.');
+    } catch {
+      toast('Não foi possível exportar todos os dados. Nenhum arquivo foi gerado. Tente novamente.', 'error');
+    } finally {
+      setExporting(false);
+    }
   };
 
   const deleteAccount = async () => {
@@ -174,7 +185,7 @@ export default function ProfilePage() {
 
       <div className="card space-y-4 p-5">
         <h2 className="font-bold">Dados</h2>
-        <Button variant="secondary" className="w-full" onClick={exportData}>Exportar meus dados</Button>
+        <Button variant="secondary" className="w-full" loading={exporting} onClick={exportData}>Exportar meus dados</Button>
         <p className="text-xs text-muted-foreground">Baixe uma cópia dos seus dados em formato Markdown.</p>
       </div>
 

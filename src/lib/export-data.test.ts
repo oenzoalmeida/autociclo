@@ -8,19 +8,28 @@ type Client = SupabaseClient<Database, 'public'>;
 type Call = { table: string; op: string; args: unknown[] };
 
 // Cliente falso que grava a cadeia de chamadas e serve fixtures por tabela.
-function fakeClient(rows: Record<string, unknown[]>) {
+function fakeClient(rows: Record<string, unknown[]>, failTable?: string, cap = 500, failOffset = 0) {
   const calls: Call[] = [];
   const builder = (table: string) => {
     const b: Record<string, unknown> = {};
-    for (const op of ['select', 'eq', 'in', 'order']) {
+    let from = 0;
+    let to = 499;
+    let ids: unknown[] | undefined;
+    for (const op of ['select', 'eq', 'in', 'order', 'range']) {
       b[op] = (...a: unknown[]) => {
         calls.push({ table, op, args: a });
+        if (op === 'range') [from, to] = a as number[];
+        if (op === 'in') ids = a[1] as unknown[];
         return b;
       };
     }
     // builders PostgREST são "thenable" em qualquer ponto da cadeia
-    b.then = (resolve: (v: { data: unknown[] }) => unknown) =>
-      Promise.resolve({ data: rows[table] ?? [] }).then(resolve);
+    b.then = (resolve: (v: unknown) => unknown) => {
+      const data = (rows[table] ?? []).filter((row) => !ids || ids.includes((row as {record_id: unknown}).record_id));
+      return Promise.resolve(table === failTable && from >= failOffset
+        ? {data: null, error: {message: 'network failure'}}
+        : {data: data.slice(from, Math.min(to + 1, from + cap)), error: null}).then(resolve);
+    };
     return b;
   };
   const client = { from: (t: string) => builder(t) } as unknown as Client;
@@ -59,8 +68,8 @@ describe('buildUserDataExport', () => {
     const { client, calls } = fakeClient({});
     await buildUserDataExport(client, 'u1', when);
     const eqCalls = calls.filter((c) => c.op === 'eq' && c.args[0] === 'user_id');
-    // 11 tabelas do usuário + a consulta de ids dos maintenance_records
-    expect(eqCalls).toHaveLength(12);
+    // Uma página vazia por tabela, sem consulta redundante de ids.
+    expect(eqCalls).toHaveLength(11);
     for (const c of eqCalls) expect(c.args[1]).toBe('u1');
   });
 
@@ -72,5 +81,34 @@ describe('buildUserDataExport', () => {
     expect(out).toContain('## vehicles');
     expect(out).not.toContain('## maintenance_record_items');
     expect(calls.some((c) => c.table === 'maintenance_record_items')).toBe(false);
+  });
+});
+
+
+describe('export completeness', () => {
+  it.each(['vehicles', 'expenses', 'maintenance_records', 'maintenance_record_items'])('rejects failed %s instead of returning a success file', async (table) => {
+    const {client} = fakeClient({vehicles: [{id: 'v1'}], maintenance_records: [{id: 'r1'}]}, table);
+    await expect(buildUserDataExport(client, 'u1', when)).rejects.toThrow(table);
+  });
+
+  it('rejects failure after a successful first page', async () => {
+    const {client} = fakeClient({vehicles: Array.from({length: 600}, (_, id) => ({id: String(id)}))}, 'vehicles', 500, 500);
+    await expect(buildUserDataExport(client, 'u1', when)).rejects.toThrow('vehicles');
+  });
+
+  it('exports beyond 1000 rows and a lower server cap, including batched child items', async () => {
+    const records = Array.from({length: 1103}, (_, id) => ({id: `r${id}`}));
+    const items = records.map(({id}, i) => ({id: `i${i}`, record_id: id}));
+    const {client, calls} = fakeClient({maintenance_records: records, maintenance_record_items: items}, undefined, 73);
+    const out = await buildUserDataExport(client, 'u1', when);
+    expect(out.match(/"record_id":/g)).toHaveLength(1103);
+    expect(out.match(/"id": "r/g)).toHaveLength(1103);
+    expect(out).toContain('"id": "i1102"');
+    const batches = calls.filter(c => c.op === 'in');
+    expect(batches.length).toBeGreaterThan(11);
+    expect(batches.every(c => (c.args[1] as unknown[]).length <= 100)).toBe(true);
+    for (const table of ['maintenance_records', 'maintenance_record_items']) {
+      expect(calls.some(c => c.table === table && c.op === 'order' && c.args[0] === 'id')).toBe(true);
+    }
   });
 });
