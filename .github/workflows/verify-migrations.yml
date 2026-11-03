@@ -1,0 +1,107 @@
+name: Verify migrations
+
+# Valida em Postgres descartável (container do runner, sem segredos, sem banco real):
+# migrações em ordem, catálogo (estrutura + seed), idempotência, preservação de
+# ajustes locais e detecção de divergência. Stubs mínimos imitam auth/storage do Supabase.
+on:
+  pull_request:
+    paths:
+      - 'supabase/**'
+      - '.github/workflows/verify-migrations.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-migrations:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: ci-ephemeral
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGUSER: postgres
+      PGPASSWORD: ci-ephemeral
+      PGDATABASE: postgres
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Stubs de auth/storage
+        run: |
+          psql -v ON_ERROR_STOP=1 -q <<'SQL'
+          create role anon nologin; create role authenticated nologin; create role service_role nologin; create role supabase_auth_admin nologin;
+          create schema if not exists auth; create schema if not exists extensions; create schema if not exists storage;
+          create table auth.users(id uuid primary key default gen_random_uuid(), email text, encrypted_password text, raw_user_meta_data jsonb, raw_app_meta_data jsonb, email_confirmed_at timestamptz, created_at timestamptz default now(), updated_at timestamptz default now(), instance_id uuid, aud text, role text, confirmation_token text, recovery_token text, email_change text, email_change_token_new text);
+          create function auth.uid() returns uuid language sql as $$ select null::uuid $$;
+          create function auth.role() returns text language sql as $$ select 'authenticated'::text $$;
+          create function auth.jwt() returns jsonb language sql as $$ select '{}'::jsonb $$;
+          create table storage.buckets(id text primary key, name text, public boolean, file_size_limit bigint, allowed_mime_types text[]);
+          create table storage.objects(id uuid default gen_random_uuid(), bucket_id text, name text, owner uuid);
+          alter table storage.objects enable row level security;
+          SQL
+
+      - name: Aplicar migrações em ordem
+        run: |
+          set -euo pipefail
+          for f in $(ls supabase/migrations/*.sql | sort); do
+            echo "aplicando $f"
+            psql -v ON_ERROR_STOP=1 -q -f "$f"
+          done
+
+      - name: Catálogo tem as contagens esperadas
+        run: |
+          psql -v ON_ERROR_STOP=1 -q <<'SQL'
+          do $$ begin
+            if (select count(*) from public.vehicle_brands) <> 22 then raise exception 'marcas: esperado 22'; end if;
+            if (select count(*) from public.vehicle_models) <> 15 then raise exception 'modelos: esperado 15'; end if;
+            if (select count(*) from public.vehicle_versions) <> 4 then raise exception 'versoes: esperado 4'; end if;
+          end $$;
+          SQL
+
+      - name: Reaplicar seed é no-op
+        run: |
+          psql -v ON_ERROR_STOP=1 -q -f supabase/migrations/20261103130100_seed_vehicle_catalog.sql
+          psql -v ON_ERROR_STOP=1 -q <<'SQL'
+          do $$ begin
+            if (select count(*) from public.vehicle_brands) <> 22 then raise exception 'marcas: esperado 22'; end if;
+            if (select count(*) from public.vehicle_models) <> 15 then raise exception 'modelos: esperado 15'; end if;
+            if (select count(*) from public.vehicle_versions) <> 4 then raise exception 'versoes: esperado 4'; end if;
+          end $$;
+          SQL
+
+      - name: Seed preserva ajuste local e recria linha ausente
+        run: |
+          psql -v ON_ERROR_STOP=1 -q <<'SQL'
+          update public.vehicle_brands set sort_order = 999 where name = 'Fiat';
+          delete from public.vehicle_models where name = 'Onix';
+          SQL
+          psql -v ON_ERROR_STOP=1 -q -f supabase/migrations/20261103130100_seed_vehicle_catalog.sql
+          psql -v ON_ERROR_STOP=1 -q <<'SQL'
+          do $$ begin
+            if (select sort_order from public.vehicle_brands where name = 'Fiat') <> 999 then raise exception 'ajuste local sobrescrito'; end if;
+            if (select count(*) from public.vehicle_models where name = 'Onix') <> 1 then raise exception 'modelo ausente nao recriado'; end if;
+            if (select count(*) from public.vehicle_brands) <> 22 then raise exception 'marcas duplicadas'; end if;
+          end $$;
+          SQL
+
+      - name: Estrutura do catálogo reaplicada é no-op e divergência falha
+        run: |
+          set -euo pipefail
+          psql -v ON_ERROR_STOP=1 -q -f supabase/migrations/20261103130000_codify_vehicle_catalog_and_checks.sql
+          psql -v ON_ERROR_STOP=1 -q <<'SQL'
+          alter table public.vehicle_brands alter column sort_order set default 5;
+          SQL
+          if psql -v ON_ERROR_STOP=1 -q -f supabase/migrations/20261103130000_codify_vehicle_catalog_and_checks.sql; then
+            echo "A divergência deveria ter falhado"; exit 1
+          fi
+          echo "divergência detectada como esperado"
