@@ -1007,6 +1007,7 @@ export type Database = {
     };
     Functions: {
       delete_current_user: { Args: Record<PropertyKey, never>; Returns: undefined };
+      export_user_data_snapshot: { Args: Record<PropertyKey, never>; Returns: Json };
       is_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
       is_vehicle_member: { Args: { vehicle_id: string }; Returns: boolean };
       list_user_files: { Args: Record<PropertyKey, never>; Returns: string[] };
