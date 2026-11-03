@@ -1,7 +1,15 @@
--- Catálogo de veículos (marcas, modelos e versões): dados de referência públicos,
--- sem dados de usuários. Valores iguais aos observados em produção em 2026-11-03.
--- Só INSERT: registros existentes (mesma chave única) NÃO são alterados.
--- Estrutura criada em 20261103130000_codify_vehicle_catalog_and_checks.sql.
+-- Catálogo inicial de referência: marcas, modelos e versões de veículos.
+-- Só nomes, slugs e ordem de exibição. Sem IDs, datas ou dados de usuários:
+-- os IDs são gerados na hora do INSERT.
+--
+-- Semântica (ON CONFLICT DO NOTHING):
+-- * Linha cuja chave única já existe (marca: name; modelo: marca+name;
+--   versão: modelo+name) é mantida como está. Ajustes locais de slug ou
+--   ordem NÃO são sobrescritos.
+-- * Linha ausente é criada. Isso NÃO prova que o catálogo existente seja
+--   equivalente a este: nomes diferentes ficam lado a lado e linhas extras
+--   não são removidas. Para conferir um banco real, compare por consulta.
+-- A estrutura vem de 20261103130000_codify_vehicle_catalog_and_checks.sql.
 
 insert into public.vehicle_brands (name, slug, sort_order) values
   ('Chevrolet', 'chevrolet', 10),
