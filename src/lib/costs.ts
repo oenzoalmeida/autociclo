@@ -26,7 +26,7 @@ export interface FuelRow {
 
 /** Supabase DATE values carry a calendar day, not a UTC instant. */
 export function parseCostDate(value: string): Date {
-  const match = /^(\\d{4})-(\\d{2})-(\\d{2})$/.exec(value);
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
   if (!match) return new Date(value);
   // Local noon avoids crossing a day boundary in negative UTC offsets.
   return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]), 12);
