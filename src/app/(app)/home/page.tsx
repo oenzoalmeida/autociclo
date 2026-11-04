@@ -21,6 +21,7 @@ export default function HomePage() {
   const [details, setDetails] = useState<Record<string, { items: Item[]; notices: Notif[]; monthExpenses: number }>>({});
   const [records, setRecords] = useState<MaintenanceRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -36,7 +37,8 @@ export default function HomePage() {
         }
       }
 
-      const { data: vs } = await supabase.from('vehicles').select('*').eq('archived', false);
+      const { data: vs, error: vehiclesError } = await supabase.from('vehicles').select('*').eq('archived', false);
+      if (vehiclesError) throw new Error('Não foi possível carregar a garagem.');
       setVehicles(vs ?? []);
 
       const map: Record<string, { items: Item[]; notices: Notif[]; monthExpenses: number }> = {};
@@ -47,8 +49,12 @@ export default function HomePage() {
 
       if (vs) {
         for (const v of vs) {
-          const itemsP = supabase.from('vehicle_maintenance_items').select('*').eq('vehicle_id', v.id).then((r) => r.data ?? []);
+          const itemsP = supabase.from('vehicle_maintenance_items').select('*').eq('vehicle_id', v.id).then((r) => {
+            if (r.error) throw r.error;
+            return r.data ?? [];
+          });
           const monthP = supabase.from('expenses').select('amount, expense_date').eq('vehicle_id', v.id).then((r) => {
+            if (r.error) throw r.error;
             const list = r.data ?? [];
             return list
               .filter((e) => { const d = parseLocalCalendarDate(e.expense_date); return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear(); })
@@ -57,9 +63,15 @@ export default function HomePage() {
           const items = await itemsP;
           const monthExpenses = await monthP;
           const rec = supabase.from('maintenance_records').select('*').eq('vehicle_id', v.id).order('service_date', { ascending: false });
-          recordPromises.push(rec.then((r) => r.data));
+          recordPromises.push(rec.then((r) => {
+            if (r.error) throw r.error;
+            return r.data;
+          }));
           const notif = supabase.from('notifications').select('*').eq('user_id', user!.id).eq('vehicle_id', v.id).eq('read', false).limit(5);
-          notifPromises.push(notif.then((r) => r.data?.[0] ?? null));
+          notifPromises.push(notif.then((r) => {
+            if (r.error) throw r.error;
+            return r.data?.[0] ?? null;
+          }));
           map[v.id] = { items, notices: [], monthExpenses };
         }
       }
@@ -72,7 +84,10 @@ export default function HomePage() {
       setDetails(map);
       setLoading(false);
     };
-    load();
+    void load().catch(() => {
+      setLoadError(true);
+      setLoading(false);
+    });
   }, [router]);
 
   if (loading) {
@@ -81,6 +96,18 @@ export default function HomePage() {
         <Skeleton className="h-8 w-52" />
         <Skeleton className="h-40 w-full" />
         <Skeleton className="h-40 w-full" />
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div role="alert" className="card space-y-3 p-5">
+        <h1 className="text-lg font-bold">Não conseguimos carregar sua garagem</h1>
+        <p className="text-sm text-muted-foreground">Seus registros não foram apagados. Verifique a conexão e tente novamente.</p>
+        <button type="button" className="rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white" onClick={() => window.location.reload()}>
+          Tentar novamente
+        </button>
       </div>
     );
   }
@@ -96,17 +123,27 @@ export default function HomePage() {
         <p className="text-sm text-muted-foreground">Aqui está a situação da sua garagem.</p>
       </div>
 
-      {single ? (
+      {vehicles?.length === 0 ? (
+        <div className="card space-y-3 p-5">
+          <h2 className="text-lg font-bold">Sua garagem está vazia</h2>
+          <p className="text-sm text-muted-foreground">Adicione seu primeiro veículo para acompanhar manutenções, lembretes e gastos.</p>
+          <Link href="/garagem" className="inline-flex rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white">
+            Adicionar veículo
+          </Link>
+        </div>
+      ) : single ? (
         <SingleVehicleSummary vehicle={single} detail={details[single.id]} />
       ) : (
         <GarageSummary vehicles={vehicles ?? []} details={details} />
       )}
 
-      <NextCares vehicles={vehicles ?? []} details={details} />
-
-      <RecentActivity records={records} />
-
-      <MonthCosts vehicles={vehicles ?? []} details={details} />
+      {vehicles && vehicles.length > 0 ? (
+        <>
+          <NextCares vehicles={vehicles} details={details} />
+          <RecentActivity records={records} />
+          <MonthCosts vehicles={vehicles} details={details} />
+        </>
+      ) : null}
     </div>
   );
 }
