@@ -105,3 +105,6 @@ jobs:
             echo "A divergência deveria ter falhado"; exit 1
           fi
           echo "divergência detectada como esperado"
+
+      - name: Historical maintenance reconciliation regression (ephemeral PostgreSQL)
+        run: psql -v ON_ERROR_STOP=1 -f scripts/test_legacy_maintenance_reconciliation.sql
