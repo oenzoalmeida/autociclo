@@ -25,6 +25,14 @@ export function parseLocalCalendarDate(date: string): Date {
   return new Date(Number(parts[1]), Number(parts[2]) - 1, Number(parts[3]), 12);
 }
 
+/** Date input fields must reflect the browser's calendar day, not UTC. */
+export function localTodayIso(date: Date = new Date()): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 export function formatDate(date: string | null | undefined): string {
   if (!date) return '—';
   const d = parseLocalCalendarDate(date);
