@@ -80,6 +80,7 @@ export default function QuickMaintenancePage() {
         amount: Number(amount),
         expense_date: date,
         mileage: Number(km) || null,
+        maintenance_record_id: record.id,
       });
     }
     if (Number(km) > (vehicles?.find((v) => v.id === selected)?.current_mileage ?? 0)) {
