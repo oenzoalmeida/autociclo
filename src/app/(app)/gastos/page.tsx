@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { formatCurrency, monthName } from '@/lib/format';
-import { buildCosts } from '@/lib/costs';
+import { buildCosts, type Cost } from '@/lib/costs';
 import { Skeleton, EmptyState } from '@/components/ui/badge';
 
 export default function ExpensesPage() {
