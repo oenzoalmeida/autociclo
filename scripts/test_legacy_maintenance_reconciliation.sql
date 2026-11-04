@@ -29,6 +29,28 @@ values
  ('98000000-0000-4000-8000-000000000024','98000000-0000-4000-8000-000000000002','98000000-0000-4000-8000-000000000001','Manutenção','Alinhamento',200,'2026-11-04','2026-11-04 10:20:02+00'),
  ('98000000-0000-4000-8000-000000000025','98000000-0000-4000-8000-000000000002','98000000-0000-4000-8000-000000000001','Manutenção','Oficina',210,'2026-11-04','2026-11-04 10:30:10+00');
 
+-- An expense may not link to another vehicle's maintenance, even for the same user.
+insert into public.vehicles(id,user_id,brand,model,year_model)
+values ('98000000-0000-4000-8000-000000000003',
+        '98000000-0000-4000-8000-000000000001', 'Outro', 'Carro', 2021);
+
+do $
+begin
+  begin
+    insert into public.expenses
+      (id,vehicle_id,user_id,category,description,amount,expense_date,maintenance_record_id)
+    values
+      ('98000000-0000-4000-8000-000000000030',
+       '98000000-0000-4000-8000-000000000003',
+       '98000000-0000-4000-8000-000000000001',
+       'Manutenção', 'vínculo inválido', 180, '2026-11-04',
+       '98000000-0000-4000-8000-000000000011');
+    raise exception 'Cross-vehicle maintenance reference should have been rejected';
+  exception when foreign_key_violation then
+    null;
+  end;
+end $;
+
 \i supabase/migrations/20261104120000_backfill_unambiguous_maintenance_expenses.sql
 
 do $$
