@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import type { Database } from '@/lib/database.types';
 import { computeItem, STATUS_LABEL, statusColor, originLabel } from '@/lib/maintenance';
@@ -115,21 +115,25 @@ function RegisterMaintenanceModal({
   const [workshop, setWorkshop] = useState('');
   const [note, setNote] = useState('');
   const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
   const [files, setFiles] = useState<File[]>([]);
 
   const toggle = (id: string) =>
     setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
 
   const handleSave = async () => {
+    if (savingRef.current) return;
     if (selected.length === 0) {
       toast('Selecione pelo menos um serviço realizado.', 'error');
       return;
     }
+    savingRef.current = true;
     setSaving(true);
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       toast('Sessão expirada.', 'error');
+      savingRef.current = false;
       setSaving(false);
       return;
     }
@@ -149,6 +153,7 @@ function RegisterMaintenanceModal({
       .single();
     if (rErr || !record) {
       toast('Não foi possível registrar.', 'error');
+      savingRef.current = false;
       setSaving(false);
       return;
     }
@@ -195,8 +200,9 @@ function RegisterMaintenanceModal({
     }
 
     // Gasto associado (manutenção)
+    let expenseFailed = false;
     if (amount && Number(amount) > 0) {
-      await supabase.from('expenses').insert({
+      const { error: expenseError } = await supabase.from('expenses').insert({
         vehicle_id: vehicle.id,
         user_id: user.id,
         category: 'Manutenção',
@@ -206,6 +212,7 @@ function RegisterMaintenanceModal({
         mileage: Number(km) || null,
         maintenance_record_id: record.id,
       });
+      expenseFailed = Boolean(expenseError);
     }
 
     await supabase.from('activity_logs').insert({
@@ -215,8 +222,11 @@ function RegisterMaintenanceModal({
       metadata: { services: selected.length },
     });
 
+    const notice = expenseFailed
+      ? 'Manutenção salva, mas o gasto não foi registrado. Não cadastre a manutenção novamente. Confira a área de Gastos.'
+      : 'Manutenção registrada com sucesso.';
     setSaving(false);
-    toast('Manutenção registrada com sucesso.');
+    toast(notice, expenseFailed ? 'error' : 'success');
     onSaved();
     onClose();
   };
