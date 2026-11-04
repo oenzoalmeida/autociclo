@@ -1,5 +1,6 @@
 'use client';
 
+import { localTodayIso } from '@/lib/format';
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
@@ -19,7 +20,7 @@ export default function QuickMaintenancePage() {
   const { vehicles, selected, setSelected } = useQuickVehicle(params.get('v') ?? '');
   const [items, setItems] = useState<Item[]>([]);
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [date, setDate] = useState(localTodayIso());
   const [km, setKm] = useState('');
   const [amount, setAmount] = useState('');
   const [workshop, setWorkshop] = useState('');
