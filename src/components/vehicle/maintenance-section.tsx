@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import type { Database } from '@/lib/database.types';
 import { computeItem, STATUS_LABEL, statusColor, originLabel } from '@/lib/maintenance';
 import { formatDate, formatNumber, localTodayIso } from '@/lib/format';
+import { isNonNegativeOrEmptyNumber } from '@/lib/financial-validation';
 import { Button } from '@/components/ui/button';
 import { Field, Input, Textarea } from '@/components/ui/input';
 import { Modal, ConfirmDialog } from '@/components/ui/modal';
@@ -125,6 +126,10 @@ function RegisterMaintenanceModal({
     if (savingRef.current) return;
     if (selected.length === 0) {
       toast('Selecione pelo menos um serviço realizado.', 'error');
+      return;
+    }
+    if (!isNonNegativeOrEmptyNumber(amount) || !isNonNegativeOrEmptyNumber(km)) {
+      toast('Informe valor e quilometragem válidos, sem números negativos.', 'error');
       return;
     }
     savingRef.current = true;
