@@ -24,10 +24,18 @@ export interface FuelRow {
   fuel_date: string;
 }
 
+/** Supabase DATE values carry a calendar day, not a UTC instant. */
+export function parseCostDate(value: string): Date {
+  const match = /^(\\d{4})-(\\d{2})-(\\d{2})$/.exec(value);
+  if (!match) return new Date(value);
+  // Local noon avoids crossing a day boundary in negative UTC offsets.
+  return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]), 12);
+}
+
 export function buildCosts(expenses: ExpenseRow[], records: MaintenanceRow[], fuels: FuelRow[]): Cost[] {
   const linked = new Set(expenses.map((e) => e.maintenance_record_id).filter((id): id is string => !!id));
   const costs: Cost[] = expenses.map((e) => ({
-    date: new Date(e.expense_date),
+    date: parseCostDate(e.expense_date),
     amount: Number(e.amount),
     category: e.category,
     label: e.description,
@@ -35,7 +43,7 @@ export function buildCosts(expenses: ExpenseRow[], records: MaintenanceRow[], fu
   for (const r of records) {
     if (Number(r.total_amount) <= 0 || linked.has(r.id)) continue;
     costs.push({
-      date: new Date(r.service_date),
+      date: parseCostDate(r.service_date),
       amount: Number(r.total_amount),
       category: 'Manutenção',
       label: r.note || `Manutenção em ${r.workshop || 'oficina'}`,
@@ -43,7 +51,7 @@ export function buildCosts(expenses: ExpenseRow[], records: MaintenanceRow[], fu
   }
   for (const f of fuels) {
     costs.push({
-      date: new Date(f.fuel_date),
+      date: parseCostDate(f.fuel_date),
       amount: Number(f.total_cost),
       category: 'Combustível',
       label: 'Abastecimento',
