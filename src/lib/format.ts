@@ -18,27 +18,34 @@ export function formatKm(value: number | null | undefined): string {
   return `${formatNumber(value)} km`;
 }
 
+/** A SQL DATE is a calendar day, not a midnight UTC timestamp. */
+export function parseLocalCalendarDate(date: string): Date {
+  const parts = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date);
+  if (!parts) return new Date(date);
+  return new Date(Number(parts[1]), Number(parts[2]) - 1, Number(parts[3]), 12);
+}
+
 export function formatDate(date: string | null | undefined): string {
   if (!date) return '—';
-  const d = new Date(date);
+  const d = parseLocalCalendarDate(date);
   if (isNaN(d.getTime())) return date;
   return d.toLocaleDateString('pt-BR');
 }
 
 export function formatDateShort(date: string | null | undefined): string {
   if (!date) return '—';
-  const d = new Date(date);
+  const d = parseLocalCalendarDate(date);
   if (isNaN(d.getTime())) return date;
   return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
 export function formatDateDayMonth(date: string): string {
-  const d = new Date(date);
+  const d = parseLocalCalendarDate(date);
   return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
 }
 
 export function relativeDays(date: string): number {
-  const d = new Date(date);
+  const d = parseLocalCalendarDate(date);
   const now = new Date();
   const diff = d.getTime() - now.getTime();
   return Math.round(diff / (1000 * 60 * 60 * 24));
