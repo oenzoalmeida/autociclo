@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 import type { Database } from '@/lib/database.types';
 import { computeItem, computeScore } from '@/lib/maintenance';
-import { formatCurrency, formatNumber, formatDate, monthName, parseLocalCalendarDate } from '@/lib/format';
+import { formatCurrency, formatNumber, formatDate, monthName, parseLocalCalendarDate, greetingForHour } from '@/lib/format';
 import { Skeleton } from '@/components/ui/badge';
 
 type Vehicle = Database['public']['Tables']['vehicles']['Row'];
@@ -112,8 +112,7 @@ export default function HomePage() {
     );
   }
 
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
+  const greeting = greetingForHour(new Date().getHours());
   const single = vehicles && vehicles.length === 1 ? vehicles[0] : null;
 
   return (
