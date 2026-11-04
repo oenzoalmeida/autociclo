@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { buildCosts, parseCostDate } from './costs';
+import { buildCosts } from './costs';
+import { parseLocalCalendarDate } from './format';
 
 describe('buildCosts', () => {
   const maintenance = { id: 'r1', total_amount: 180, service_date: '2026-11-03', note: null, workshop: null };
@@ -22,14 +23,14 @@ describe('buildCosts', () => {
 
 describe('calendar dates in expense reports', () => {
   it('preserves the first day of a month in the local timezone', () => {
-    const date = parseCostDate('2026-11-01');
+    const date = parseLocalCalendarDate('2026-11-01');
     expect(date.getFullYear()).toBe(2026);
     expect(date.getMonth()).toBe(10);
     expect(date.getDate()).toBe(1);
   });
 
   it('preserves calendar year on January 1st', () => {
-    const date = parseCostDate('2027-01-01');
+    const date = parseLocalCalendarDate('2027-01-01');
     expect([date.getFullYear(), date.getMonth(), date.getDate()]).toEqual([2027, 0, 1]);
   });
 
