@@ -53,6 +53,6 @@ begin
        and action='maintenance_expense_reconciled') <> 1 then
    raise exception 'Expected exactly one audited historical reconciliation';
  end if;
-end $;
+end $$;
 
 rollback;
