@@ -34,7 +34,7 @@ insert into public.vehicles(id,user_id,brand,model,year_model)
 values ('98000000-0000-4000-8000-000000000003',
         '98000000-0000-4000-8000-000000000001', 'Outro', 'Carro', 2021);
 
-do $
+do $$
 begin
   begin
     insert into public.expenses
@@ -49,7 +49,7 @@ begin
   exception when foreign_key_violation then
     null;
   end;
-end $;
+end $$;
 
 \i supabase/migrations/20261104120000_backfill_unambiguous_maintenance_expenses.sql
 
