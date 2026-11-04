@@ -100,6 +100,7 @@ export type Database = {
       };
       expenses: {
         Row: {
+          maintenance_record_id: string | null;
           amount: number;
           category: string;
           created_at: string;
@@ -112,6 +113,7 @@ export type Database = {
         };
         ComputedFields: never;
         Insert: {
+          maintenance_record_id?: string | null;
           amount: number;
           category: string;
           created_at?: string;
@@ -123,6 +125,7 @@ export type Database = {
           vehicle_id: string;
         };
         Update: {
+          maintenance_record_id?: string | null;
           amount?: number;
           category?: string;
           created_at?: string;
