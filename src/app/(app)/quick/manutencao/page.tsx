@@ -1,6 +1,7 @@
 'use client';
 
 import { localTodayIso } from '@/lib/format';
+import { isNonNegativeOrEmptyNumber } from '@/lib/financial-validation';
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
@@ -47,6 +48,10 @@ export default function QuickMaintenancePage() {
     if (!selected) return;
     if (selectedItems.length === 0) {
       toast('Selecione pelo menos um serviço realizado.', 'error');
+      return;
+    }
+    if (!isNonNegativeOrEmptyNumber(amount) || !isNonNegativeOrEmptyNumber(km)) {
+      toast('Informe valor e quilometragem válidos, sem números negativos.', 'error');
       return;
     }
     savingRef.current = true;
