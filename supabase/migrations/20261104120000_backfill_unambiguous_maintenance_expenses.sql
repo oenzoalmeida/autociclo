@@ -33,8 +33,18 @@ with candidates as (
   from candidates
   where expenses_for_maintenance = 1 and maintenances_for_expense = 1
 )
-update public.expenses e
-set maintenance_record_id = p.maintenance_record_id
-from unique_pairs p
-where e.id = p.expense_id
-  and e.maintenance_record_id is null;
+ , linked as (
+  update public.expenses e
+  set maintenance_record_id = p.maintenance_record_id
+  from unique_pairs p
+  where e.id = p.expense_id
+    and e.maintenance_record_id is null
+  returning e.id as expense_id, e.user_id, e.vehicle_id, e.maintenance_record_id
+)
+insert into public.activity_logs (user_id, vehicle_id, action, metadata)
+select
+  user_id,
+  vehicle_id,
+  'maintenance_expense_reconciled',
+  jsonb_build_object('expense_id', expense_id, 'maintenance_record_id', maintenance_record_id)
+from linked;
