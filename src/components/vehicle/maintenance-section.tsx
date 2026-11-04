@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import type { Database } from '@/lib/database.types';
 import { computeItem, STATUS_LABEL, statusColor, originLabel } from '@/lib/maintenance';
-import { formatDate, formatNumber } from '@/lib/format';
+import { formatDate, formatNumber, localTodayIso } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { Field, Input, Textarea } from '@/components/ui/input';
 import { Modal, ConfirmDialog } from '@/components/ui/modal';
@@ -109,7 +109,7 @@ function RegisterMaintenanceModal({
 }) {
   const { toast } = useToast();
   const [selected, setSelected] = useState<string[]>([]);
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [date, setDate] = useState(localTodayIso());
   const [km, setKm] = useState(String(vehicle.current_mileage || ''));
   const [amount, setAmount] = useState('');
   const [workshop, setWorkshop] = useState('');
