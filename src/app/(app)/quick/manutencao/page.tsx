@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import type { Database } from '@/lib/database.types';
@@ -25,6 +25,7 @@ export default function QuickMaintenancePage() {
   const [workshop, setWorkshop] = useState('');
   const [note, setNote] = useState('');
   const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
 
   useEffect(() => {
     if (!selected) return;
@@ -41,15 +42,17 @@ export default function QuickMaintenancePage() {
   const toggle = (id: string) => setSelectedItems((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
 
   const save = async () => {
+    if (savingRef.current) return;
     if (!selected) return;
     if (selectedItems.length === 0) {
       toast('Selecione pelo menos um serviço realizado.', 'error');
       return;
     }
+    savingRef.current = true;
     setSaving(true);
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { toast('Sessão expirada.', 'error'); setSaving(false); return; }
+    if (!user) { toast('Sessão expirada.', 'error'); savingRef.current = false; setSaving(false); return; }
 
     const { data: record, error } = await supabase.from('maintenance_records').insert({
       vehicle_id: selected,
@@ -60,7 +63,7 @@ export default function QuickMaintenancePage() {
       workshop: workshop || null,
       note: note || null,
     }).select().single();
-    if (error || !record) { toast('Não foi possível registrar.', 'error'); setSaving(false); return; }
+    if (error || !record) { toast('Não foi possível registrar.', 'error'); savingRef.current = false; setSaving(false); return; }
 
     await supabase.from('maintenance_record_items').insert(
       selectedItems.map((id) => ({ record_id: record.id, maintenance_item_id: id }))
@@ -71,8 +74,9 @@ export default function QuickMaintenancePage() {
         last_done_mileage: Number(km) || 0,
       }).eq('id', id);
     }
+    let expenseFailed = false;
     if (amount && Number(amount) > 0) {
-      await supabase.from('expenses').insert({
+      const { error: expenseError } = await supabase.from('expenses').insert({
         vehicle_id: selected,
         user_id: user.id,
         category: 'Manutenção',
@@ -82,6 +86,7 @@ export default function QuickMaintenancePage() {
         mileage: Number(km) || null,
         maintenance_record_id: record.id,
       });
+      expenseFailed = Boolean(expenseError);
     }
     if (Number(km) > (vehicles?.find((v) => v.id === selected)?.current_mileage ?? 0)) {
       await supabase.from('vehicles').update({ current_mileage: Number(km) }).eq('id', selected);
@@ -92,8 +97,11 @@ export default function QuickMaintenancePage() {
       action: 'maintenance_registered',
       metadata: { services: selectedItems.length },
     });
-    toast('Manutenção registrada com sucesso.');
-    router.push('/home?msg=' + encodeURIComponent('Manutenção registrada com sucesso.'));
+    const notice = expenseFailed
+      ? 'Manutenção salva, mas o gasto não foi registrado. Não cadastre a manutenção novamente. Confira a área de Gastos.'
+      : 'Manutenção registrada com sucesso.';
+    toast(notice, expenseFailed ? 'error' : 'success');
+    router.push('/home?msg=' + encodeURIComponent(notice));
   };
 
   if (!vehicles) return <Skeleton className="h-64 w-full" />;
