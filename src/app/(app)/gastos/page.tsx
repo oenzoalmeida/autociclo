@@ -3,14 +3,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { formatCurrency, monthName } from '@/lib/format';
+import { buildCosts } from '@/lib/costs';
 import { Skeleton, EmptyState } from '@/components/ui/badge';
-
-interface Cost {
-  date: Date;
-  amount: number;
-  category: string;
-  label: string;
-}
 
 export default function ExpensesPage() {
   const [costs, setCosts] = useState<Cost[] | null>(null);
@@ -27,16 +21,9 @@ export default function ExpensesPage() {
         supabase.from('fuel_records').select('*').eq('user_id', user.id),
       ]);
 
-      const list: Cost[] = [];
-      (exps.data ?? []).forEach((e) => list.push({ date: new Date(e.expense_date), amount: Number(e.amount), category: e.category, label: e.description }));
-      (recs.data ?? []).forEach((r) => {
-        if (Number(r.total_amount) > 0) {
-          list.push({ date: new Date(r.service_date), amount: Number(r.total_amount), category: 'Manutenção', label: r.note || `Manutenção em ${r.workshop || 'oficina'}` });
-        }
-      });
-      (fuels.data ?? []).forEach((f) => list.push({ date: new Date(f.fuel_date), amount: Number(f.total_cost), category: 'Combustível', label: 'Abastecimento' }));
-
-      list.sort((a, b) => b.date.getTime() - a.date.getTime());
+      // Explicitly linked rows are one economic event, not two expenses.
+      // Unlinked legacy rows are retained until they can be reconciled safely.
+      const list = buildCosts(exps.data ?? [], recs.data ?? [], fuels.data ?? []);
       setCosts(list);
     };
     load();
