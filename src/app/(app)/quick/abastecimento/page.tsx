@@ -1,6 +1,7 @@
 'use client';
 
 import { localTodayIso } from '@/lib/format';
+import { isPositiveFiniteNumber, isNonNegativeOrEmptyNumber } from '@/lib/financial-validation';
 import { useRef, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
@@ -30,8 +31,8 @@ export default function QuickFuelPage() {
 
   const save = async () => {
     if (savingRef.current || !selected) return;
-    if (!liters || !totalCost || !pricePerL) {
-      toast('Preencha litros, valor por litro e valor total.', 'error');
+    if (![liters, totalCost, pricePerL].every(isPositiveFiniteNumber) || !isNonNegativeOrEmptyNumber(km)) {
+      toast('Informe litros, valores positivos e quilometragem válida.', 'error');
       return;
     }
     savingRef.current = true;
