@@ -48,6 +48,11 @@ begin
  ) then
    raise exception 'Independent, ambiguous or out-of-window expense was linked';
  end if;
-end $$;
+ if (select count(*) from public.activity_logs
+     where user_id='98000000-0000-4000-8000-000000000001'
+       and action='maintenance_expense_reconciled') <> 1 then
+   raise exception 'Expected exactly one audited historical reconciliation';
+ end if;
+end $;
 
 rollback;
