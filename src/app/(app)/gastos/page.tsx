@@ -8,18 +8,27 @@ import { Skeleton, EmptyState } from '@/components/ui/badge';
 
 export default function ExpensesPage() {
   const [costs, setCosts] = useState<Cost[] | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     const load = async () => {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        setLoadError('Sessão expirada. Entre novamente para consultar seus gastos.');
+        return;
+      }
 
       const [exps, recs, fuels] = await Promise.all([
         supabase.from('expenses').select('*').eq('user_id', user.id),
         supabase.from('maintenance_records').select('*').eq('user_id', user.id),
         supabase.from('fuel_records').select('*').eq('user_id', user.id),
       ]);
+
+      if (exps.error || recs.error || fuels.error) {
+        setLoadError('Não foi possível carregar todos os lançamentos. Os totais não estão disponíveis. Tente novamente.');
+        return;
+      }
 
       // Explicitly linked rows are one economic event, not two expenses.
       // Unlinked legacy rows are retained until they can be reconciled safely.
@@ -59,6 +68,7 @@ export default function ExpensesPage() {
     return { arr, max };
   }, [costs]);
 
+  if (loadError) return <div role="alert" className="card p-5 text-sm text-red-600">{loadError}</div>;
   if (!costs) return <Skeleton className="h-64 w-full" />;
 
   return (
