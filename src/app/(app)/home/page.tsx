@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 import type { Database } from '@/lib/database.types';
 import { computeItem, computeScore } from '@/lib/maintenance';
-import { formatCurrency, formatNumber, formatDate, monthName } from '@/lib/format';
+import { formatCurrency, formatNumber, formatDate, monthName, parseLocalCalendarDate } from '@/lib/format';
 import { Skeleton } from '@/components/ui/badge';
 
 type Vehicle = Database['public']['Tables']['vehicles']['Row'];
@@ -51,7 +51,7 @@ export default function HomePage() {
           const monthP = supabase.from('expenses').select('amount, expense_date').eq('vehicle_id', v.id).then((r) => {
             const list = r.data ?? [];
             return list
-              .filter((e) => { const d = new Date(e.expense_date); return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear(); })
+              .filter((e) => { const d = parseLocalCalendarDate(e.expense_date); return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear(); })
               .reduce((s, e) => s + Number(e.amount), 0);
           });
           const items = await itemsP;
