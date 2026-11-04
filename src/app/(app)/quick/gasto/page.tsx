@@ -1,5 +1,6 @@
 'use client';
 
+import { localTodayIso } from '@/lib/format';
 import { useRef, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
@@ -19,7 +20,7 @@ export default function QuickExpensePage() {
   const [category, setCategory] = useState('Manutenção');
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [date, setDate] = useState(localTodayIso());
   const [km, setKm] = useState('');
   const [saving, setSaving] = useState(false);
   const savingRef = useRef(false);
