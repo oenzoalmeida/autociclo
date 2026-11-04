@@ -4,7 +4,18 @@ import {
   formatDateShort,
   formatDateDayMonth,
   parseLocalCalendarDate,
+  localTodayIso,
 } from './format';
+
+describe('date inputs', () => {
+  it('uses the local day for a late-night timestamp', () => {
+    expect(localTodayIso(new Date(2026, 10, 4, 23, 59))).toBe('2026-11-04');
+  });
+
+  it('pads single digit days and months', () => {
+    expect(localTodayIso(new Date(2027, 0, 2, 1, 0))).toBe('2027-01-02');
+  });
+});
 
 describe('date-only fields from Supabase', () => {
   it('keeps a date in its calendar month, not UTC midnight', () => {
