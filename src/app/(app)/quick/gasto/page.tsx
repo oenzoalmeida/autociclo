@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Skeleton } from '@/components/ui/badge';
@@ -22,17 +22,19 @@ export default function QuickExpensePage() {
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [km, setKm] = useState('');
   const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
 
   const save = async () => {
-    if (!selected) return;
+    if (savingRef.current || !selected) return;
     if (!description || !amount || Number(amount) <= 0) {
       toast('Preencha descrição e valor válido.', 'error');
       return;
     }
+    savingRef.current = true;
     setSaving(true);
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { toast('Sessão expirada.', 'error'); setSaving(false); return; }
+    if (!user) { toast('Sessão expirada.', 'error'); savingRef.current = false; setSaving(false); return; }
     const { error } = await supabase.from('expenses').insert({
       vehicle_id: selected,
       user_id: user.id,
@@ -50,6 +52,7 @@ export default function QuickExpensePage() {
       toast('Gasto registrado.');
       router.push('/home?msg=' + encodeURIComponent('Gasto registrado.'));
     }
+    savingRef.current = false;
     setSaving(false);
   };
 
