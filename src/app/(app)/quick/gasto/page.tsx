@@ -1,6 +1,7 @@
 'use client';
 
 import { localTodayIso } from '@/lib/format';
+import { isPositiveFiniteNumber, isNonNegativeOrEmptyNumber } from '@/lib/financial-validation';
 import { useRef, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
@@ -27,8 +28,8 @@ export default function QuickExpensePage() {
 
   const save = async () => {
     if (savingRef.current || !selected) return;
-    if (!description || !amount || Number(amount) <= 0) {
-      toast('Preencha descrição e valor válido.', 'error');
+    if (!description.trim() || !isPositiveFiniteNumber(amount) || !isNonNegativeOrEmptyNumber(km)) {
+      toast('Informe descrição, valor positivo e quilometragem válida.', 'error');
       return;
     }
     savingRef.current = true;
