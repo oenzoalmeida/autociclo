@@ -2,18 +2,13 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { buildCostSummary, type CostEntry, type UnlinkedMaintenance } from '@/lib/costs';
 import { formatCurrency, monthName } from '@/lib/format';
 import { Skeleton, EmptyState } from '@/components/ui/badge';
 
-interface Cost {
-  date: Date;
-  amount: number;
-  category: string;
-  label: string;
-}
-
 export default function ExpensesPage() {
-  const [costs, setCosts] = useState<Cost[] | null>(null);
+  const [costs, setCosts] = useState<CostEntry[] | null>(null);
+  const [unlinked, setUnlinked] = useState<UnlinkedMaintenance>({ count: 0, total: 0 });
 
   useEffect(() => {
     const load = async () => {
@@ -27,17 +22,10 @@ export default function ExpensesPage() {
         supabase.from('fuel_records').select('*').eq('user_id', user.id),
       ]);
 
-      const list: Cost[] = [];
-      (exps.data ?? []).forEach((e) => list.push({ date: new Date(e.expense_date), amount: Number(e.amount), category: e.category, label: e.description }));
-      (recs.data ?? []).forEach((r) => {
-        if (Number(r.total_amount) > 0) {
-          list.push({ date: new Date(r.service_date), amount: Number(r.total_amount), category: 'Manutenção', label: r.note || `Manutenção em ${r.workshop || 'oficina'}` });
-        }
-      });
-      (fuels.data ?? []).forEach((f) => list.push({ date: new Date(f.fuel_date), amount: Number(f.total_cost), category: 'Combustível', label: 'Abastecimento' }));
-
-      list.sort((a, b) => b.date.getTime() - a.date.getTime());
-      setCosts(list);
+      const summary = buildCostSummary({ expenses: exps.data, records: recs.data, fuels: fuels.data });
+      summary.entries.sort((a, b) => b.date.getTime() - a.date.getTime());
+      setCosts(summary.entries);
+      setUnlinked(summary.unlinkedMaintenance);
     };
     load();
   }, []);
@@ -95,6 +83,16 @@ export default function ExpensesPage() {
               <Stat label="Este ano" value={formatCurrency(totals.year)} sub={String(new Date().getFullYear())} />
               <Stat label="Últimos 12 meses" value={formatCurrency(totals.last12)} sub="12 meses" />
               <Stat label="Total registrado" value={formatCurrency(costs.reduce((s, c) => s + c.amount, 0))} sub="Todos" strong />
+            </div>
+          )}
+
+          {unlinked.count > 0 && (
+            <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
+              ⚠️ {unlinked.count === 1 ? '1 manutenção registrada' : `${unlinked.count} manutenções registradas`} sem
+              vínculo confirmado com um gasto ({formatCurrency(unlinked.total)}) {unlinked.count === 1 ? 'não entra' : 'não entram'}{' '}
+              no total acima, para não correr o risco de somar em dobro. {unlinked.count === 1 ? 'Ela pode' : 'Elas podem'} já
+              estar {unlinked.count === 1 ? 'representada' : 'representadas'} nos gastos; o app não altera esses
+              registros automaticamente — confirmar ou vincular exigiria uma revisão sua, fora desta tela.
             </div>
           )}
 
