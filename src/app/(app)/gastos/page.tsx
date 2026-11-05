@@ -2,18 +2,12 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { buildCostList, type CostEntry } from '@/lib/costs';
 import { formatCurrency, monthName } from '@/lib/format';
 import { Skeleton, EmptyState } from '@/components/ui/badge';
 
-interface Cost {
-  date: Date;
-  amount: number;
-  category: string;
-  label: string;
-}
-
 export default function ExpensesPage() {
-  const [costs, setCosts] = useState<Cost[] | null>(null);
+  const [costs, setCosts] = useState<CostEntry[] | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -27,15 +21,7 @@ export default function ExpensesPage() {
         supabase.from('fuel_records').select('*').eq('user_id', user.id),
       ]);
 
-      const list: Cost[] = [];
-      (exps.data ?? []).forEach((e) => list.push({ date: new Date(e.expense_date), amount: Number(e.amount), category: e.category, label: e.description }));
-      (recs.data ?? []).forEach((r) => {
-        if (Number(r.total_amount) > 0) {
-          list.push({ date: new Date(r.service_date), amount: Number(r.total_amount), category: 'Manutenção', label: r.note || `Manutenção em ${r.workshop || 'oficina'}` });
-        }
-      });
-      (fuels.data ?? []).forEach((f) => list.push({ date: new Date(f.fuel_date), amount: Number(f.total_cost), category: 'Combustível', label: 'Abastecimento' }));
-
+      const list = buildCostList({ expenses: exps.data, records: recs.data, fuels: fuels.data });
       list.sort((a, b) => b.date.getTime() - a.date.getTime());
       setCosts(list);
     };

@@ -204,6 +204,7 @@ function RegisterMaintenanceModal({
         amount: Number(amount),
         expense_date: date,
         mileage: Number(km) || null,
+        maintenance_record_id: record.id,
       });
     }
 

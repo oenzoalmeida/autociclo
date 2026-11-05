@@ -106,6 +106,7 @@ export type Database = {
           description: string;
           expense_date: string;
           id: string;
+          maintenance_record_id: string | null;
           mileage: number | null;
           user_id: string;
           vehicle_id: string;
@@ -118,6 +119,7 @@ export type Database = {
           description: string;
           expense_date: string;
           id?: string;
+          maintenance_record_id?: string | null;
           mileage?: number | null;
           user_id: string;
           vehicle_id: string;
@@ -129,11 +131,19 @@ export type Database = {
           description?: string;
           expense_date?: string;
           id?: string;
+          maintenance_record_id?: string | null;
           mileage?: number | null;
           user_id?: string;
           vehicle_id?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "expenses_maintenance_record_id_fkey";
+            columns: ["maintenance_record_id"];
+            isOneToOne: false;
+            referencedRelation: "maintenance_records";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "expenses_vehicle_id_fkey";
             columns: ["vehicle_id"];

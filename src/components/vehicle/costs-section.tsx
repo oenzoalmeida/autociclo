@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { buildCostList } from '@/lib/costs';
 import type { Database } from '@/lib/database.types';
 import { formatCurrency, monthName } from '@/lib/format';
 import { Button } from '@/components/ui/button';
@@ -32,18 +33,7 @@ export function CostsSection({
   const [addOpen, setAddOpen] = useState(false);
   const [activeCat, setActiveCat] = useState<string>('all');
   const [now] = useState(() => new Date());
-  const allCosts = useMemo(() => {
-    const list: { date: Date; amount: number; label: string; category: string }[] = [];
-    for (const e of expenses) {
-      list.push({ date: new Date(e.expense_date), amount: Number(e.amount), label: e.description, category: e.category });
-    }
-    for (const r of records) {
-      if (Number(r.total_amount) > 0) {
-        list.push({ date: new Date(r.service_date), amount: Number(r.total_amount), label: r.note || `Manutenção em ${r.workshop || 'oficina'}`, category: 'Manutenção' });
-      }
-    }
-    return list;
-  }, [expenses, records]);
+  const allCosts = useMemo(() => buildCostList({ expenses, records }), [expenses, records]);
 
   const totals = useMemo(() => {
     const thisMonth = allCosts.filter((x) => x.date.getMonth() === now.getMonth() && x.date.getFullYear() === now.getFullYear()).reduce((s, c) => s + c.amount, 0);
