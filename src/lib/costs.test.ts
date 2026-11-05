@@ -119,4 +119,69 @@ describe('buildCostList', () => {
     expect(list[0].label).toBe('Manutenção em Oficina do Zé');
     expect(list[0].category).toBe('Manutenção');
   });
+
+  it('não pareia gasto avulso com texto não derivado do registro', () => {
+    const list = buildCostList({
+      expenses: [expense({ description: 'Revisão do câmbio' })],
+      records: [record()],
+    });
+    expect(total(list)).toBe(360);
+  });
+
+  it('não pareia texto genérico quando o registro tem anotação própria', () => {
+    // O sombra real desse registro teria a anotação como descrição.
+    const list = buildCostList({
+      expenses: [expense({ description: 'Manutenção' })],
+      records: [record({ note: 'Troca de óleo' })],
+    });
+    expect(total(list)).toBe(360);
+  });
+
+  it('reconhece sombra legado nos dois formatos de descrição do app', () => {
+    const viaSecao = buildCostList({
+      expenses: [expense({ description: 'Manutenção em Oficina A' })],
+      records: [record({ workshop: 'Oficina A' })],
+    });
+    expect(total(viaSecao)).toBe(180);
+    const viaRapido = buildCostList({
+      expenses: [expense({ description: 'Manutenção' })],
+      records: [record({ workshop: 'Oficina A' })],
+    });
+    expect(total(viaRapido)).toBe(180);
+  });
+
+  it('CASO ADVERSARIAL: manutenção sem sombra + avulso idêntico (inclusive texto) conta uma vez', () => {
+    // Dados indistinguíveis de um par sombra real: não existe critério que
+    // separe os dois sem apagar dado. Comportamento determinístico declarado:
+    // o valor é contado UMA vez (via gasto); nada é removido da base.
+    const list = buildCostList({
+      expenses: [expense({ description: 'Troca de óleo' })],
+      records: [record({ note: 'Troca de óleo' })],
+    });
+    expect(total(list)).toBe(180);
+  });
+
+  it('CASO ADVERSARIAL: sombra + avulso indistinguíveis - os dois gastos sempre contam', () => {
+    const list = buildCostList({
+      expenses: [
+        expense({ id: 'e-sombra', description: 'Manutenção em Oficina A', maintenance_record_id: 'r1' }),
+        expense({ id: 'e-avulso', description: 'Manutenção em Oficina A', created_at: '2026-06-10T13:00:00Z' }),
+      ],
+      records: [record({ workshop: 'Oficina A' })],
+    });
+    expect(total(list)).toBe(360);
+  });
+
+  it('fallback sem migração (sem maintenance_record_id) não oculta gasto legítimo', () => {
+    // Banco ainda não migrado: todos os vínculos nulos. Gasto avulso comum
+    // continua contando; a manutenção conta via seu sombra legado.
+    const list = buildCostList({
+      expenses: [
+        expense({ id: 'e-sombra' }),
+        expense({ id: 'e-avulso', amount: 75, category: 'Seguro', description: 'Seguro anual', expense_date: '2026-06-20' }),
+      ],
+      records: [record()],
+    });
+    expect(total(list)).toBe(255);
+  });
 });

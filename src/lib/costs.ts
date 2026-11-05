@@ -15,19 +15,32 @@ export interface CostEntry {
 // maintenance_records e um gasto "sombra" em expenses com o mesmo valor.
 // Somar as duas tabelas conta a manutenção em dobro (bug dos Gastos).
 //
-// O vínculo explícito (expenses.maintenance_record_id) é o critério principal
-// para reconhecer o sombra. A correspondência exata (mesmo veículo, data,
-// valor e categoria "Manutenção") cobre os dados históricos gravados antes de
-// a coluna existir. O pareamento é 1:1 e ordenado: cada gasto cobre no máximo
-// um registro, então duas manutenções idênticas com um único gasto gravado
-// ainda somam o registro que ficou sem par.
+// O vínculo explícito (expenses.maintenance_record_id) é o único critério
+// determinístico para reconhecer o sombra. Para os dados históricos gravados
+// antes de a coluna existir, usa-se correspondência exata: mesmo veículo,
+// data, valor, categoria "Manutenção" E texto que o app teria gravado para
+// aquele registro (a descrição do sombra é derivada do registro desde que o
+// fluxo existe: a anotação, ou "Manutenção em <oficina>", ou "Manutenção").
+//
+// Limite declarado: um gasto avulso histórico com TODOS esses campos
+// idênticos aos de uma manutenção sem sombra é indistinguível de um sombra
+// real; nesse caso o valor é contado uma vez. O pareamento é 1:1 e ordenado:
+// cada gasto cobre no máximo um registro, então duas manutenções idênticas
+// com um único gasto gravado ainda somam o registro que ficou sem par.
+function matchesShadowDescription(e: Expense, r: MaintenanceRecord): boolean {
+  if (r.note) return e.description === r.note;
+  if (e.description === 'Manutenção') return true;
+  return r.workshop != null && e.description === `Manutenção em ${r.workshop}`;
+}
+
 function isShadowExpense(e: Expense, r: MaintenanceRecord): boolean {
   if (e.maintenance_record_id) return e.maintenance_record_id === r.id;
   return (
     e.vehicle_id === r.vehicle_id &&
     e.category === 'Manutenção' &&
     e.expense_date === r.service_date &&
-    Number(e.amount) === Number(r.total_amount)
+    Number(e.amount) === Number(r.total_amount) &&
+    matchesShadowDescription(e, r)
   );
 }
 
