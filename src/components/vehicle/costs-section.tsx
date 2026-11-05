@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { buildCostList } from '@/lib/costs';
+import { buildCostSummary } from '@/lib/costs';
 import type { Database } from '@/lib/database.types';
 import { formatCurrency, monthName } from '@/lib/format';
 import { Button } from '@/components/ui/button';
@@ -33,7 +33,10 @@ export function CostsSection({
   const [addOpen, setAddOpen] = useState(false);
   const [activeCat, setActiveCat] = useState<string>('all');
   const [now] = useState(() => new Date());
-  const allCosts = useMemo(() => buildCostList({ expenses, records }), [expenses, records]);
+  const { entries: allCosts, unmatchedMaintenance: unmatched } = useMemo(
+    () => buildCostSummary({ expenses, records }),
+    [expenses, records]
+  );
 
   const totals = useMemo(() => {
     const thisMonth = allCosts.filter((x) => x.date.getMonth() === now.getMonth() && x.date.getFullYear() === now.getFullYear()).reduce((s, c) => s + c.amount, 0);
@@ -75,6 +78,13 @@ export function CostsSection({
             <StatCard label="Últimos 12 meses" value={formatCurrency(totals.last12)} sub="12 meses" />
             <StatCard label="Total registrado" value={formatCurrency(totals.total)} sub="Todos" strong />
           </div>
+
+          {unmatched.count > 0 && (
+            <div className="mt-4 rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
+              ⚠️ {unmatched.count === 1 ? '1 manutenção' : `${unmatched.count} manutenções`} sem gasto correspondente (
+              {formatCurrency(unmatched.total)}) fora do total. A correção definitiva será proposta separadamente.
+            </div>
+          )}
 
           {byCategory.arr.length > 0 && (
             <div className="mt-5">

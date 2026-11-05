@@ -2,12 +2,13 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { buildCostList, type CostEntry } from '@/lib/costs';
+import { buildCostSummary, type CostEntry, type UnmatchedMaintenance } from '@/lib/costs';
 import { formatCurrency, monthName } from '@/lib/format';
 import { Skeleton, EmptyState } from '@/components/ui/badge';
 
 export default function ExpensesPage() {
   const [costs, setCosts] = useState<CostEntry[] | null>(null);
+  const [unmatched, setUnmatched] = useState<UnmatchedMaintenance>({ count: 0, total: 0 });
 
   useEffect(() => {
     const load = async () => {
@@ -21,9 +22,10 @@ export default function ExpensesPage() {
         supabase.from('fuel_records').select('*').eq('user_id', user.id),
       ]);
 
-      const list = buildCostList({ expenses: exps.data, records: recs.data, fuels: fuels.data });
-      list.sort((a, b) => b.date.getTime() - a.date.getTime());
-      setCosts(list);
+      const summary = buildCostSummary({ expenses: exps.data, records: recs.data, fuels: fuels.data });
+      summary.entries.sort((a, b) => b.date.getTime() - a.date.getTime());
+      setCosts(summary.entries);
+      setUnmatched(summary.unmatchedMaintenance);
     };
     load();
   }, []);
@@ -81,6 +83,14 @@ export default function ExpensesPage() {
               <Stat label="Este ano" value={formatCurrency(totals.year)} sub={String(new Date().getFullYear())} />
               <Stat label="Últimos 12 meses" value={formatCurrency(totals.last12)} sub="12 meses" />
               <Stat label="Total registrado" value={formatCurrency(costs.reduce((s, c) => s + c.amount, 0))} sub="Todos" strong />
+            </div>
+          )}
+
+          {unmatched.count > 0 && (
+            <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
+              ⚠️ {unmatched.count === 1 ? '1 manutenção registrada' : `${unmatched.count} manutenções registradas`} sem
+              gasto correspondente ({formatCurrency(unmatched.total)}) não {unmatched.count === 1 ? 'está' : 'estão'} incluída
+              {unmatched.count === 1 ? '' : 's'} no total acima. A correção definitiva será proposta separadamente.
             </div>
           )}
 
