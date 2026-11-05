@@ -2,13 +2,13 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { buildCostSummary, type CostEntry, type UnmatchedMaintenance } from '@/lib/costs';
+import { buildCostSummary, type CostEntry, type UnlinkedMaintenance } from '@/lib/costs';
 import { formatCurrency, monthName } from '@/lib/format';
 import { Skeleton, EmptyState } from '@/components/ui/badge';
 
 export default function ExpensesPage() {
   const [costs, setCosts] = useState<CostEntry[] | null>(null);
-  const [unmatched, setUnmatched] = useState<UnmatchedMaintenance>({ count: 0, total: 0 });
+  const [unlinked, setUnlinked] = useState<UnlinkedMaintenance>({ count: 0, total: 0 });
 
   useEffect(() => {
     const load = async () => {
@@ -25,7 +25,7 @@ export default function ExpensesPage() {
       const summary = buildCostSummary({ expenses: exps.data, records: recs.data, fuels: fuels.data });
       summary.entries.sort((a, b) => b.date.getTime() - a.date.getTime());
       setCosts(summary.entries);
-      setUnmatched(summary.unmatchedMaintenance);
+      setUnlinked(summary.unlinkedMaintenance);
     };
     load();
   }, []);
@@ -86,11 +86,12 @@ export default function ExpensesPage() {
             </div>
           )}
 
-          {unmatched.count > 0 && (
+          {unlinked.count > 0 && (
             <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
-              ⚠️ {unmatched.count === 1 ? '1 manutenção registrada' : `${unmatched.count} manutenções registradas`} sem
-              gasto correspondente ({formatCurrency(unmatched.total)}) não {unmatched.count === 1 ? 'está' : 'estão'} incluída
-              {unmatched.count === 1 ? '' : 's'} no total acima. A correção definitiva será proposta separadamente.
+              ⚠️ {unlinked.count === 1 ? '1 manutenção registrada' : `${unlinked.count} manutenções registradas`} sem
+              vínculo confirmado com um gasto ({formatCurrency(unlinked.total)}). {unlinked.count === 1 ? 'Ela pode' : 'Elas podem'}{' '}
+              já estar {unlinked.count === 1 ? 'incluída' : 'incluídas'} nos gastos acima — a confirmação será tratada
+              separadamente, sem alterar nada automaticamente.
             </div>
           )}
 

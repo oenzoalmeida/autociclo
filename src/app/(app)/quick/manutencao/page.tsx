@@ -71,18 +71,9 @@ export default function QuickMaintenancePage() {
         last_done_mileage: Number(km) || 0,
       }).eq('id', id);
     }
-    if (amount && Number(amount) > 0) {
-      await supabase.from('expenses').insert({
-        vehicle_id: selected,
-        user_id: user.id,
-        category: 'Manutenção',
-        description: note || 'Manutenção',
-        amount: Number(amount),
-        expense_date: date,
-        mileage: Number(km) || null,
-        maintenance_record_id: record.id,
-      });
-    }
+    // O gasto correspondente é gravado pelo gatilho
+    // maintenance_records_shadow_expense na mesma transação do registro,
+    // já vinculado (expenses.maintenance_record_id) - sem escrita dupla aqui.
     if (Number(km) > (vehicles?.find((v) => v.id === selected)?.current_mileage ?? 0)) {
       await supabase.from('vehicles').update({ current_mileage: Number(km) }).eq('id', selected);
     }
