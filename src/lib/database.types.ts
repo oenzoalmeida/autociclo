@@ -1022,6 +1022,17 @@ export type Database = {
       is_vehicle_member: { Args: { vehicle_id: string }; Returns: boolean };
       list_user_files: { Args: Record<PropertyKey, never>; Returns: string[] };
       must_change_password: { Args: Record<PropertyKey, never>; Returns: boolean };
+      register_maintenance_with_expense: {
+        Args: {
+          p_vehicle_id: string;
+          p_service_date: string;
+          p_mileage: number;
+          p_total_amount: number;
+          p_workshop?: string | null;
+          p_note?: string | null;
+        };
+        Returns: Json;
+      };
     };
     Enums: {
       [_ in never]: never;

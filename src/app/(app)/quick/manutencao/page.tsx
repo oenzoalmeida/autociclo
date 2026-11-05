@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Field, Input, Textarea } from '@/components/ui/input';
 import { useToast } from '@/components/ui/toast';
 import { useQuickVehicle } from '@/lib/data/use-quick-vehicle';
+import { registerMaintenance } from '@/lib/data/register-maintenance';
 
 type Item = Database['public']['Tables']['vehicle_maintenance_items']['Row'];
 
@@ -51,19 +52,18 @@ export default function QuickMaintenancePage() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { toast('Sessão expirada.', 'error'); setSaving(false); return; }
 
-    const { data: record, error } = await supabase.from('maintenance_records').insert({
-      vehicle_id: selected,
-      user_id: user.id,
-      service_date: date,
+    const { recordId, error } = await registerMaintenance(supabase, user.id, {
+      vehicleId: selected,
+      serviceDate: date,
       mileage: Number(km) || 0,
-      total_amount: amount ? Number(amount) : 0,
+      totalAmount: amount ? Number(amount) : 0,
       workshop: workshop || null,
       note: note || null,
-    }).select().single();
-    if (error || !record) { toast('Não foi possível registrar.', 'error'); setSaving(false); return; }
+    });
+    if (error || !recordId) { toast('Não foi possível registrar.', 'error'); setSaving(false); return; }
 
     await supabase.from('maintenance_record_items').insert(
-      selectedItems.map((id) => ({ record_id: record.id, maintenance_item_id: id }))
+      selectedItems.map((id) => ({ record_id: recordId, maintenance_item_id: id }))
     );
     for (const id of selectedItems) {
       await supabase.from('vehicle_maintenance_items').update({
@@ -71,9 +71,9 @@ export default function QuickMaintenancePage() {
         last_done_mileage: Number(km) || 0,
       }).eq('id', id);
     }
-    // O gasto correspondente é gravado pelo gatilho
-    // maintenance_records_shadow_expense na mesma transação do registro,
-    // já vinculado (expenses.maintenance_record_id) - sem escrita dupla aqui.
+    // O gasto correspondente já foi gravado, vinculado
+    // (expenses.maintenance_record_id): pela RPC, na mesma transação, no
+    // schema novo; ou pelo fallback interno do helper, no schema antigo.
     if (Number(km) > (vehicles?.find((v) => v.id === selected)?.current_mileage ?? 0)) {
       await supabase.from('vehicles').update({ current_mileage: Number(km) }).eq('id', selected);
     }
