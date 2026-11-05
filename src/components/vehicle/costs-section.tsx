@@ -82,8 +82,9 @@ export function CostsSection({
           {unlinked.count > 0 && (
             <div className="mt-4 rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
               ⚠️ {unlinked.count === 1 ? '1 manutenção' : `${unlinked.count} manutenções`} sem vínculo confirmado com um
-              gasto ({formatCurrency(unlinked.total)}). Podem já estar nos gastos acima — a confirmação será tratada
-              separadamente, sem alterar nada automaticamente.
+              gasto ({formatCurrency(unlinked.total)}) {unlinked.count === 1 ? 'não entra' : 'não entram'} no total acima,
+              para não correr o risco de somar em dobro. Podem já estar representadas nos gastos — a confirmação será
+              tratada separadamente, sem alterar nada automaticamente.
             </div>
           )}
 
