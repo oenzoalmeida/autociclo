@@ -19,7 +19,8 @@
 -- app escolhe deterministicamente o caminho certo para o schema presente:
 --   - app novo + schema novo: uma chamada RPC atômica;
 --   - app novo + schema antigo: RPC ausente -> app grava como sempre gravou
---     (registro + sombra manual), sem dobrar;
+--     (registro + sombra manual, em duas escritas NÃO atômicas como antes,
+--     sem dobrar); a atomicidade existe só no caminho RPC;
 --   - app antigo + schema novo: sem gatilho, o app antigo segue gravando
 --     registro + sombra manual, sem dobrar.
 -- Com gatilho, a janela "schema novo + app antigo" gravaria duas sombras
@@ -57,6 +58,13 @@ declare
 begin
   if v_user is null then
     raise exception 'register_maintenance_with_expense: usuário não autenticado';
+  end if;
+
+  -- Autorização: o veículo precisa ser do chamador (ou de garagem
+  -- compartilhada da qual ele é membro). Sem isso, bastaria conhecer o id de
+  -- um veículo alheio para anexar registros a ele.
+  if not public.is_vehicle_member(p_vehicle_id) then
+    raise exception 'register_maintenance_with_expense: veículo fora da garagem do usuário';
   end if;
 
   insert into public.maintenance_records (

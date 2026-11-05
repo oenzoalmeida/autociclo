@@ -83,8 +83,8 @@ export function CostsSection({
             <div className="mt-4 rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
               ⚠️ {unlinked.count === 1 ? '1 manutenção' : `${unlinked.count} manutenções`} sem vínculo confirmado com um
               gasto ({formatCurrency(unlinked.total)}) {unlinked.count === 1 ? 'não entra' : 'não entram'} no total acima,
-              para não correr o risco de somar em dobro. Podem já estar representadas nos gastos — a confirmação será
-              tratada separadamente, sem alterar nada automaticamente.
+              para não correr o risco de somar em dobro. Podem já estar representadas nos gastos; o app não altera
+              esses registros automaticamente — confirmar ou vincular exigiria uma revisão sua.
             </div>
           )}
 

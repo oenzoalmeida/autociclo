@@ -91,8 +91,8 @@ export default function ExpensesPage() {
               ⚠️ {unlinked.count === 1 ? '1 manutenção registrada' : `${unlinked.count} manutenções registradas`} sem
               vínculo confirmado com um gasto ({formatCurrency(unlinked.total)}) {unlinked.count === 1 ? 'não entra' : 'não entram'}{' '}
               no total acima, para não correr o risco de somar em dobro. {unlinked.count === 1 ? 'Ela pode' : 'Elas podem'} já
-              estar {unlinked.count === 1 ? 'representada' : 'representadas'} nos gastos — a confirmação será tratada
-              separadamente, sem alterar nada automaticamente.
+              estar {unlinked.count === 1 ? 'representada' : 'representadas'} nos gastos; o app não altera esses
+              registros automaticamente — confirmar ou vincular exigiria uma revisão sua, fora desta tela.
             </div>
           )}
 
