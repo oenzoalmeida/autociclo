@@ -100,43 +100,50 @@ export type Database = {
       };
       expenses: {
         Row: {
-          maintenance_record_id: string | null;
           amount: number;
           category: string;
           created_at: string;
           description: string;
           expense_date: string;
           id: string;
+          maintenance_record_id: string | null;
           mileage: number | null;
           user_id: string;
           vehicle_id: string;
         };
         ComputedFields: never;
         Insert: {
-          maintenance_record_id?: string | null;
           amount: number;
           category: string;
           created_at?: string;
           description: string;
           expense_date: string;
           id?: string;
+          maintenance_record_id?: string | null;
           mileage?: number | null;
           user_id: string;
           vehicle_id: string;
         };
         Update: {
-          maintenance_record_id?: string | null;
           amount?: number;
           category?: string;
           created_at?: string;
           description?: string;
           expense_date?: string;
           id?: string;
+          maintenance_record_id?: string | null;
           mileage?: number | null;
           user_id?: string;
           vehicle_id?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "expenses_maintenance_record_id_fkey";
+            columns: ["maintenance_record_id"];
+            isOneToOne: false;
+            referencedRelation: "maintenance_records";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "expenses_vehicle_id_fkey";
             columns: ["vehicle_id"];
@@ -1015,6 +1022,17 @@ export type Database = {
       is_vehicle_member: { Args: { vehicle_id: string }; Returns: boolean };
       list_user_files: { Args: Record<PropertyKey, never>; Returns: string[] };
       must_change_password: { Args: Record<PropertyKey, never>; Returns: boolean };
+      register_maintenance_with_expense: {
+        Args: {
+          p_vehicle_id: string;
+          p_service_date: string;
+          p_mileage: number;
+          p_total_amount: number;
+          p_workshop?: string | null;
+          p_note?: string | null;
+        };
+        Returns: Json;
+      };
     };
     Enums: {
       [_ in never]: never;

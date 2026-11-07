@@ -1,23 +1,150 @@
-import { describe, expect, it } from 'vitest';
-import { buildCosts } from './costs';
+import { describe, it, expect } from 'vitest';
+import { buildCostSummary } from './costs';
 import { parseLocalCalendarDate } from './format';
+import type { Database } from './database.types';
 
-describe('buildCosts', () => {
-  const maintenance = { id: 'r1', total_amount: 180, service_date: '2026-11-03', note: null, workshop: null };
-  const linkedExpense = { amount: 180, category: 'Manutenção', description: 'Manutenção', expense_date: '2026-11-03', maintenance_record_id: 'r1' };
-  it('counts a linked maintenance/expense pair once', () => {
-    expect(buildCosts([linkedExpense], [maintenance], []).reduce((s, c) => s + c.amount, 0)).toBe(180);
+type Expense = Database['public']['Tables']['expenses']['Row'];
+type MaintenanceRecord = Database['public']['Tables']['maintenance_records']['Row'];
+type FuelRecord = Database['public']['Tables']['fuel_records']['Row'];
+
+function expense(overrides: Partial<Expense> = {}): Expense {
+  return {
+    id: 'e1',
+    vehicle_id: 'v1',
+    user_id: 'u1',
+    category: 'Manutenção',
+    description: 'Manutenção',
+    amount: 180,
+    expense_date: '2026-06-10',
+    mileage: null,
+    maintenance_record_id: null,
+    created_at: '2026-06-10T12:00:00Z',
+    ...overrides,
+  };
+}
+
+function record(overrides: Partial<MaintenanceRecord> = {}): MaintenanceRecord {
+  return {
+    id: 'r1',
+    vehicle_id: 'v1',
+    user_id: 'u1',
+    service_date: '2026-06-10',
+    mileage: 10000,
+    total_amount: 180,
+    workshop: null,
+    note: null,
+    created_at: '2026-06-10T12:00:00Z',
+    updated_at: '2026-06-10T12:00:00Z',
+    ...overrides,
+  };
+}
+
+function fuel(overrides: Partial<FuelRecord> = {}): FuelRecord {
+  return {
+    id: 'f1',
+    vehicle_id: 'v1',
+    user_id: 'u1',
+    fuel_date: '2026-06-11',
+    mileage: 10100,
+    liters: 40,
+    total_cost: 240,
+    price_per_liter: 6,
+    fuel_type: 'Gasolina',
+    station: null,
+    full_tank: true,
+    created_at: '2026-06-11T12:00:00Z',
+    ...overrides,
+  };
+}
+
+const sum = (list: { amount: number }[]) => list.reduce((s, c) => s + c.amount, 0);
+
+describe('buildCostSummary', () => {
+  it('total é determinístico: soma só gastos e combustível, nunca registros', () => {
+    // Caso do bug: gasto avulso de 50 + manutenção de 180. O sombra de 180 já
+    // está em expenses; o registro NÃO entra na soma, mesmo sem vínculo.
+    const { entries } = buildCostSummary({
+      expenses: [expense(), expense({ id: 'e2', amount: 50, category: 'Outros', expense_date: '2026-06-12' })],
+      records: [record()],
+    });
+    expect(sum(entries)).toBe(230);
   });
-  it('retains old maintenance without expense row', () => {
-    expect(buildCosts([], [maintenance], [])).toHaveLength(1);
+
+  it('registro novo com sombra vinculado não aparece na seção separada', () => {
+    const { entries, unlinkedMaintenance } = buildCostSummary({
+      expenses: [expense({ maintenance_record_id: 'r1' })],
+      records: [record()],
+    });
+    expect(sum(entries)).toBe(180);
+    expect(unlinkedMaintenance).toEqual({ count: 0, total: 0 });
   });
-  it('preserves separate user-entered expenses, even when amount and date match', () => {
-    const independent = { ...linkedExpense, maintenance_record_id: null };
-    expect(buildCosts([independent], [maintenance], [])).toHaveLength(2);
+
+  it('par legado sem vínculo: gasto conta uma vez E o registro aparece na seção separada', () => {
+    // Igualdade não prova sobreposição: o registro legado fica visível para
+    // confirmação, sem rótulo de órfão e sem entrar no total.
+    const { entries, unlinkedMaintenance } = buildCostSummary({
+      expenses: [expense()],
+      records: [record()],
+    });
+    expect(sum(entries)).toBe(180);
+    expect(unlinkedMaintenance).toEqual({ count: 1, total: 180 });
   });
-  it('includes fuel and independent expenses', () => {
-    const fuel = { fuel_date: '2026-11-04', total_cost: 50 };
-    expect(buildCosts([linkedExpense], [maintenance], [fuel]).reduce((s,c)=>s+c.amount,0)).toBe(230);
+
+  it('registro sem nenhum gasto: fora do total E visível na seção separada', () => {
+    const { entries, unlinkedMaintenance } = buildCostSummary({ expenses: [], records: [record()] });
+    expect(entries).toHaveLength(0);
+    expect(unlinkedMaintenance).toEqual({ count: 1, total: 180 });
+  });
+
+  it('CASO ADVERSARIAL: manutenção sem sombra + avulso idêntico (inclusive texto)', () => {
+    // Dados indistinguíveis de um par sombra real. Comportamento declarado:
+    // o total contém o valor UMA vez via gasto (nada é apagado) e o registro
+    // aparece na seção separada para confirmação - nada é decidido de fininho.
+    const { entries, unlinkedMaintenance } = buildCostSummary({
+      expenses: [expense({ description: 'Troca de óleo' })],
+      records: [record({ note: 'Troca de óleo' })],
+    });
+    expect(sum(entries)).toBe(180);
+    expect(unlinkedMaintenance).toEqual({ count: 1, total: 180 });
+  });
+
+  it('CASO ADVERSARIAL: sombra + avulso indistinguíveis - os dois gastos sempre contam', () => {
+    const { entries, unlinkedMaintenance } = buildCostSummary({
+      expenses: [
+        expense({ id: 'e-sombra', maintenance_record_id: 'r1' }),
+        expense({ id: 'e-avulso', created_at: '2026-06-10T13:00:00Z' }),
+      ],
+      records: [record()],
+    });
+    expect(sum(entries)).toBe(360);
+    expect(unlinkedMaintenance).toEqual({ count: 0, total: 0 });
+  });
+
+  it('vínculo de outro registro não cobre este registro', () => {
+    const { unlinkedMaintenance } = buildCostSummary({
+      expenses: [expense({ maintenance_record_id: 'outro-registro' })],
+      records: [record()],
+    });
+    expect(unlinkedMaintenance).toEqual({ count: 1, total: 180 });
+  });
+
+  it('duas manutenções idênticas sem vínculo: as duas aparecem na seção separada', () => {
+    const { entries, unlinkedMaintenance } = buildCostSummary({
+      expenses: [expense()],
+      records: [record(), record({ id: 'r2' })],
+    });
+    expect(sum(entries)).toBe(180);
+    expect(unlinkedMaintenance).toEqual({ count: 2, total: 360 });
+  });
+
+  it('ignora manutenção sem valor e soma combustível uma vez', () => {
+    const { entries, unlinkedMaintenance } = buildCostSummary({
+      expenses: [],
+      records: [record({ total_amount: 0 })],
+      fuels: [fuel()],
+    });
+    expect(sum(entries)).toBe(240);
+    expect(unlinkedMaintenance).toEqual({ count: 0, total: 0 });
   });
 });
 
@@ -34,13 +161,14 @@ describe('calendar dates in expense reports', () => {
     expect([date.getFullYear(), date.getMonth(), date.getDate()]).toEqual([2027, 0, 1]);
   });
 
-  it('uses the correct local month for expenses, maintenance and fuel dates', () => {
-    const expenses = [{ amount: 10, category: 'Outros', description: 'Teste', expense_date: '2026-11-01' }];
-    const maintenance = [{ id: 'r2', total_amount: 20, service_date: '2026-11-01', note: null, workshop: null }];
-    const fuel = [{ total_cost: 30, fuel_date: '2026-11-01' }];
-    const costs = buildCosts(expenses, maintenance, fuel);
-    expect(costs).toHaveLength(3);
-    for (const entry of costs) {
+  it('uses the correct local month for expense and fuel dates in the summary entries', () => {
+    const { entries } = buildCostSummary({
+      expenses: [expense({ expense_date: '2026-11-01' })],
+      records: [],
+      fuels: [fuel({ fuel_date: '2026-11-01' })],
+    });
+    expect(entries).toHaveLength(2);
+    for (const entry of entries) {
       expect([entry.date.getFullYear(), entry.date.getMonth(), entry.date.getDate()]).toEqual([2026, 10, 1]);
     }
   });

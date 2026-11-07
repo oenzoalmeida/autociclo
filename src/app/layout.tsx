@@ -46,7 +46,7 @@ export const metadata: Metadata = {
     locale: 'pt_BR',
     images: [
       {
-        url: '/og-image.png',
+        url: '/og-image.png?v=ae41b6038845',
         width: 1200,
         height: 630,
         alt: 'AutoCiclo — o prontuário digital do seu carro',
@@ -57,7 +57,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: siteTitle,
     description: siteDescription,
-    images: ['/og-image.png'],
+    images: ['/og-image.png?v=ae41b6038845'],
   },
 };
 

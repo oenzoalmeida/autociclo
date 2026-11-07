@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import type { Database } from '@/lib/database.types';
 import { computeItem, STATUS_LABEL, statusColor, originLabel } from '@/lib/maintenance';
+import { registerMaintenance } from '@/lib/data/register-maintenance';
 import { formatDate, formatNumber, localTodayIso } from '@/lib/format';
 import { isNonNegativeOrEmptyNumber } from '@/lib/financial-validation';
 import { Button } from '@/components/ui/button';
@@ -143,25 +144,21 @@ function RegisterMaintenanceModal({
       return;
     }
 
-    const { data: record, error: rErr } = await supabase
-      .from('maintenance_records')
-      .insert({
-        vehicle_id: vehicle.id,
-        user_id: user.id,
-        service_date: date,
-        mileage: Number(km) || vehicle.current_mileage,
-        total_amount: amount ? Number(amount) : 0,
-        workshop: workshop || null,
-        note: note || null,
-      })
-      .select()
-      .single();
-    if (rErr || !record) {
+    const { recordId, error: rErr, shadowFailed } = await registerMaintenance(supabase, user.id, {
+      vehicleId: vehicle.id,
+      serviceDate: date,
+      mileage: Number(km) || vehicle.current_mileage,
+      totalAmount: amount ? Number(amount) : 0,
+      workshop: workshop || null,
+      note: note || null,
+    });
+    if (rErr || !recordId) {
       toast('Não foi possível registrar.', 'error');
       savingRef.current = false;
       setSaving(false);
       return;
     }
+    const record = { id: recordId };
 
     // Itens executados
     const itemAmounts = bufferAmount(selected, items, Number(amount) || 0);
@@ -204,21 +201,9 @@ function RegisterMaintenanceModal({
       }
     }
 
-    // Gasto associado (manutenção)
-    let expenseFailed = false;
-    if (amount && Number(amount) > 0) {
-      const { error: expenseError } = await supabase.from('expenses').insert({
-        vehicle_id: vehicle.id,
-        user_id: user.id,
-        category: 'Manutenção',
-        description: workshop ? note || `Manutenção em ${workshop}` : note || 'Manutenção',
-        amount: Number(amount),
-        expense_date: date,
-        mileage: Number(km) || null,
-        maintenance_record_id: record.id,
-      });
-      expenseFailed = Boolean(expenseError);
-    }
+    // O gasto correspondente já foi gravado, vinculado
+    // (expenses.maintenance_record_id): pela RPC, na mesma transação, no
+    // schema novo; ou pelo fallback interno do helper, no schema antigo.
 
     await supabase.from('activity_logs').insert({
       user_id: user.id,
@@ -227,11 +212,11 @@ function RegisterMaintenanceModal({
       metadata: { services: selected.length },
     });
 
-    const notice = expenseFailed
+    const notice = shadowFailed
       ? 'Manutenção salva, mas o gasto não foi registrado. Não cadastre a manutenção novamente. Confira a área de Gastos.'
       : 'Manutenção registrada com sucesso.';
     setSaving(false);
-    toast(notice, expenseFailed ? 'error' : 'success');
+    toast(notice, shadowFailed ? 'error' : 'success');
     onSaved();
     onClose();
   };
