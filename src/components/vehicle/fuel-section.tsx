@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import type { Database } from '@/lib/database.types';
-import { formatCurrency, formatDate } from '@/lib/format';
+import { formatCurrency, formatDate, localTodayIso } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { Field, Input, Select } from '@/components/ui/input';
 import { Modal, ConfirmDialog } from '@/components/ui/modal';
@@ -121,7 +121,7 @@ function Metric({ label, value }: { label: string; value: string }) {
 function AddFuelModal({ vehicle, fuel, onClose, onSaved }: { vehicle: Vehicle; fuel: Fuel[]; onClose: () => void; onSaved: () => void }) {
   const { toast } = useToast();
   const last = [...fuel].sort((a, b) => new Date(b.fuel_date).getTime() - new Date(a.fuel_date).getTime())[0];
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [date, setDate] = useState(localTodayIso());
   const [km, setKm] = useState(String(vehicle.current_mileage || ''));
   const [liters, setLiters] = useState('');
   const [pricePerL, setPricePerL] = useState('');

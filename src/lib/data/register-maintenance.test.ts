@@ -116,12 +116,12 @@ describe('registerMaintenance', () => {
     expect(expenseInsert).not.toHaveBeenCalled();
   });
 
-  it('fallback: sombra falhando não esconde o registro (fica visível sem vínculo)', async () => {
+  it('fallback: sombra falhando não esconde o registro (fica visível sem vínculo) e avisa o chamador', async () => {
     const { client } = makeClient({
       rpcResult: { data: null, error: { code: 'PGRST202' } },
       expenseInsert: { error: { message: 'boom' } },
     });
     const r = await registerMaintenance(client, 'user-1', INPUT);
-    expect(r).toEqual({ recordId: 'rec-1', error: false });
+    expect(r).toEqual({ recordId: 'rec-1', error: false, shadowFailed: true });
   });
 });

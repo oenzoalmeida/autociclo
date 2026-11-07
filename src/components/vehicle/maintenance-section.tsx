@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import type { Database } from '@/lib/database.types';
 import { computeItem, STATUS_LABEL, statusColor, originLabel } from '@/lib/maintenance';
 import { registerMaintenance } from '@/lib/data/register-maintenance';
-import { formatDate, formatNumber } from '@/lib/format';
+import { formatDate, formatNumber, localTodayIso } from '@/lib/format';
+import { isNonNegativeOrEmptyNumber } from '@/lib/financial-validation';
 import { Button } from '@/components/ui/button';
 import { Field, Input, Textarea } from '@/components/ui/input';
 import { Modal, ConfirmDialog } from '@/components/ui/modal';
@@ -110,32 +111,40 @@ function RegisterMaintenanceModal({
 }) {
   const { toast } = useToast();
   const [selected, setSelected] = useState<string[]>([]);
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [date, setDate] = useState(localTodayIso());
   const [km, setKm] = useState(String(vehicle.current_mileage || ''));
   const [amount, setAmount] = useState('');
   const [workshop, setWorkshop] = useState('');
   const [note, setNote] = useState('');
   const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
   const [files, setFiles] = useState<File[]>([]);
 
   const toggle = (id: string) =>
     setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
 
   const handleSave = async () => {
+    if (savingRef.current) return;
     if (selected.length === 0) {
       toast('Selecione pelo menos um serviço realizado.', 'error');
       return;
     }
+    if (!isNonNegativeOrEmptyNumber(amount) || !isNonNegativeOrEmptyNumber(km)) {
+      toast('Informe valor e quilometragem válidos, sem números negativos.', 'error');
+      return;
+    }
+    savingRef.current = true;
     setSaving(true);
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       toast('Sessão expirada.', 'error');
+      savingRef.current = false;
       setSaving(false);
       return;
     }
 
-    const { recordId, error: rErr } = await registerMaintenance(supabase, user.id, {
+    const { recordId, error: rErr, shadowFailed } = await registerMaintenance(supabase, user.id, {
       vehicleId: vehicle.id,
       serviceDate: date,
       mileage: Number(km) || vehicle.current_mileage,
@@ -145,6 +154,7 @@ function RegisterMaintenanceModal({
     });
     if (rErr || !recordId) {
       toast('Não foi possível registrar.', 'error');
+      savingRef.current = false;
       setSaving(false);
       return;
     }
@@ -202,8 +212,11 @@ function RegisterMaintenanceModal({
       metadata: { services: selected.length },
     });
 
+    const notice = shadowFailed
+      ? 'Manutenção salva, mas o gasto não foi registrado. Não cadastre a manutenção novamente. Confira a área de Gastos.'
+      : 'Manutenção registrada com sucesso.';
     setSaving(false);
-    toast('Manutenção registrada com sucesso.');
+    toast(notice, shadowFailed ? 'error' : 'success');
     onSaved();
     onClose();
   };

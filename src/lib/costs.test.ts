@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildCostSummary } from './costs';
+import { parseLocalCalendarDate } from './format';
 import type { Database } from './database.types';
 
 type Expense = Database['public']['Tables']['expenses']['Row'];
@@ -144,5 +145,31 @@ describe('buildCostSummary', () => {
     });
     expect(sum(entries)).toBe(240);
     expect(unlinkedMaintenance).toEqual({ count: 0, total: 0 });
+  });
+});
+
+describe('calendar dates in expense reports', () => {
+  it('preserves the first day of a month in the local timezone', () => {
+    const date = parseLocalCalendarDate('2026-11-01');
+    expect(date.getFullYear()).toBe(2026);
+    expect(date.getMonth()).toBe(10);
+    expect(date.getDate()).toBe(1);
+  });
+
+  it('preserves calendar year on January 1st', () => {
+    const date = parseLocalCalendarDate('2027-01-01');
+    expect([date.getFullYear(), date.getMonth(), date.getDate()]).toEqual([2027, 0, 1]);
+  });
+
+  it('uses the correct local month for expense and fuel dates in the summary entries', () => {
+    const { entries } = buildCostSummary({
+      expenses: [expense({ expense_date: '2026-11-01' })],
+      records: [],
+      fuels: [fuel({ fuel_date: '2026-11-01' })],
+    });
+    expect(entries).toHaveLength(2);
+    for (const entry of entries) {
+      expect([entry.date.getFullYear(), entry.date.getMonth(), entry.date.getDate()]).toEqual([2026, 10, 1]);
+    }
   });
 });

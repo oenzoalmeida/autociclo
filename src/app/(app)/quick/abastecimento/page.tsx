@@ -1,6 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { localTodayIso } from '@/lib/format';
+import { isPositiveFiniteNumber, isNonNegativeOrEmptyNumber } from '@/lib/financial-validation';
+import { useRef, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Skeleton } from '@/components/ui/badge';
@@ -16,7 +18,7 @@ export default function QuickFuelPage() {
   const router = useRouter();
   const { toast } = useToast();
   const { vehicles, selected, setSelected } = useQuickVehicle(params.get('v') ?? '');
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [date, setDate] = useState(localTodayIso());
   const [km, setKm] = useState('');
   const [liters, setLiters] = useState('');
   const [totalCost, setTotalCost] = useState('');
@@ -25,17 +27,19 @@ export default function QuickFuelPage() {
   const [station, setStation] = useState('');
   const [fullTank, setFullTank] = useState(true);
   const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
 
   const save = async () => {
-    if (!selected) return;
-    if (!liters || !totalCost || !pricePerL) {
-      toast('Preencha litros, valor por litro e valor total.', 'error');
+    if (savingRef.current || !selected) return;
+    if (![liters, totalCost, pricePerL].every(isPositiveFiniteNumber) || !isNonNegativeOrEmptyNumber(km)) {
+      toast('Informe litros, valores positivos e quilometragem válida.', 'error');
       return;
     }
+    savingRef.current = true;
     setSaving(true);
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { toast('Sessão expirada.', 'error'); setSaving(false); return; }
+    if (!user) { toast('Sessão expirada.', 'error'); savingRef.current = false; setSaving(false); return; }
     const { error } = await supabase.from('fuel_records').insert({
       vehicle_id: selected,
       user_id: user.id,
@@ -56,6 +60,7 @@ export default function QuickFuelPage() {
       toast('Abastecimento registrado.');
       router.push('/home?msg=' + encodeURIComponent('Abastecimento registrado.'));
     }
+    savingRef.current = false;
     setSaving(false);
   };
 

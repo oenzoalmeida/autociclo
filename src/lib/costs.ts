@@ -1,4 +1,5 @@
 import type { Database } from './database.types';
+import { parseLocalCalendarDate } from './format';
 
 type Expense = Database['public']['Tables']['expenses']['Row'];
 type MaintenanceRecord = Database['public']['Tables']['maintenance_records']['Row'];
@@ -46,7 +47,7 @@ export function buildCostSummary(input: {
   const fuels = input.fuels ?? [];
 
   const entries: CostEntry[] = expenses.map((e) => ({
-    date: new Date(e.expense_date),
+    date: parseLocalCalendarDate(e.expense_date),
     amount: Number(e.amount),
     category: e.category,
     label: e.description,
@@ -54,7 +55,7 @@ export function buildCostSummary(input: {
 
   for (const f of fuels) {
     entries.push({
-      date: new Date(f.fuel_date),
+      date: parseLocalCalendarDate(f.fuel_date),
       amount: Number(f.total_cost),
       category: 'Combustível',
       label: 'Abastecimento',

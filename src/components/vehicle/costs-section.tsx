@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { buildCostSummary } from '@/lib/costs';
 import type { Database } from '@/lib/database.types';
-import { formatCurrency, monthName } from '@/lib/format';
+import { formatCurrency, monthName, localTodayIso } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { Field, Input, Select } from '@/components/ui/input';
 import { Modal } from '@/components/ui/modal';
@@ -137,7 +137,7 @@ function AddExpenseModal({ vehicle, onClose, onSaved }: { vehicle: Vehicle; onCl
   const [category, setCategory] = useState('Manutenção');
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [date, setDate] = useState(localTodayIso());
   const [km, setKm] = useState('');
   const [saving, setSaving] = useState(false);
 

@@ -28,6 +28,9 @@ export interface RegisterMaintenanceInput {
 export interface RegisterMaintenanceResult {
   recordId: string | null;
   error: boolean;
+  // true quando o registro foi gravado mas o gasto sombra falhou (só no
+  // caminho legado; no caminho RPC a falha derruba a transação inteira).
+  shadowFailed?: boolean;
 }
 
 // Descrição determinística, idêntica à da função SQL — usada no caminho
@@ -92,7 +95,8 @@ export async function registerMaintenance(
     });
     // Se a sombra falhar, o registro fica visível na seção de manutenções
     // sem vínculo (mesmo modo de falha que já existia) — não some, não dobra.
-    if (eErr) return { recordId: record.id, error: false };
+    // O chamador é avisado para orientar o usuário a não cadastrar de novo.
+    if (eErr) return { recordId: record.id, error: false, shadowFailed: true };
   }
   return { recordId: record.id, error: false };
 }
