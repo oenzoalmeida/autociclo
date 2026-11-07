@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800;900&family=JetBrains+Mono:wght@700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -167,3 +169,37 @@
     transform: none;
   }
 }
+
+/* PROPOSTA A "Oficina" - escopo .lpa, nao altera o resto do app */
+.lpa {
+  --ac-bg: #101417; --ac-panel: #171D22; --ac-line: #2A3238;
+  --ac-orange: #FF6B1A; --ac-text: #F2F0EA; --ac-mut: #9AA5AC;
+  background: var(--ac-bg) !important; color: var(--ac-text) !important;
+  font-family: 'Archivo', system-ui, sans-serif !important;
+}
+.lpa .dark\:bg-\[hsl\(var\(--background\)\)\] { background: var(--ac-bg) !important; }
+.lpa section, .lpa section.bg-white { background: transparent !important; border-color: var(--ac-line) !important; }
+.lpa header { background: #0C0F11 !important; border-bottom: 1px solid var(--ac-line) !important; }
+.lpa header nav a, .lpa header span { color: var(--ac-text) !important; }
+.lpa h1, .lpa h2, .lpa h3 { font-family: 'Archivo', sans-serif !important; font-weight: 900 !important; text-transform: uppercase; letter-spacing: -0.01em; color: var(--ac-text) !important; }
+.lpa h1 { font-size: clamp(3rem, 7vw, 5.2rem) !important; line-height: 0.98 !important; }
+.lpa h1 span { background: none !important; -webkit-text-fill-color: var(--ac-orange) !important; color: var(--ac-orange) !important; }
+.lpa p, .lpa .text-muted-foreground, .lpa .text-slate-600 { color: var(--ac-mut) !important; }
+.lpa .rounded-full.border { border-color: var(--ac-orange) !important; background: transparent !important; color: var(--ac-orange) !important; border-radius: 2px !important; text-transform: uppercase; letter-spacing: 0.14em; font-family: 'JetBrains Mono', monospace; }
+.lpa .btn-primary { background: var(--ac-orange) !important; color: #101417 !important; border-radius: 2px !important; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 800; box-shadow: 4px 4px 0 #00000066; }
+.lpa .btn-primary:hover { background: #ff7f38 !important; }
+.lpa .btn-secondary, .lpa .btn-outline { background: transparent !important; border: 1px solid var(--ac-line) !important; color: var(--ac-text) !important; border-radius: 2px !important; text-transform: uppercase; letter-spacing: 0.06em; }
+.lpa .card { background: var(--ac-panel) !important; border: 1px solid var(--ac-line) !important; border-radius: 4px !important; box-shadow: none !important; }
+.lpa .card .text-brand-600 { color: var(--ac-orange) !important; font-family: 'JetBrains Mono', monospace !important; }
+.lpa .card .text-3xl { display: none; }
+.lpa .card h3::before { content: ""; display: block; width: 22px; height: 6px; background: repeating-linear-gradient(90deg, var(--ac-orange) 0 4px, transparent 4px 7px); margin-bottom: 10px; }
+.lpa .card h3 { font-size: 1.05rem !important; }
+.lpa .card p { color: var(--ac-mut) !important; }
+.lpa .from-brand-500.to-brand-700, .lpa .bg-gradient-to-br { background: linear-gradient(120deg, #FF6B1A, #C74500) !important; border-radius: 4px !important; }
+.lpa .from-brand-500 p, .lpa .bg-gradient-to-br p { color: #101417 !important; text-transform: uppercase; font-weight: 900 !important; }
+.lpa details, .lpa summary { border-color: var(--ac-line) !important; }
+.lpa summary { color: var(--ac-text) !important; font-weight: 800; text-transform: uppercase; font-size: 0.95rem; }
+.lpa details p, .lpa details div { color: var(--ac-mut) !important; }
+.lpa footer, .lpa .border-t { border-color: var(--ac-line) !important; }
+.lpa a { color: inherit; }
+.lpa .text-brand-700, .lpa .text-brand-600, .lpa .text-brand-400 { color: var(--ac-orange) !important; }
