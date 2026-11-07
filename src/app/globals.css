@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Libre+Franklin:wght@400;600;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -167,3 +169,35 @@
     transform: none;
   }
 }
+
+/* PROPOSTA B "Manual do Proprietario" - escopo .lpb */
+.lpb {
+  --ac-paper: #F4EFE2; --ac-card: #FBF8EF; --ac-ink: #1E3A5F; --ac-mut: #5C6A72;
+  --ac-gold: #C89212; --ac-line: #D8CFB8;
+  background: var(--ac-paper) !important; color: var(--ac-ink) !important;
+  font-family: 'Libre Franklin', system-ui, sans-serif !important;
+}
+.lpb .dark\:bg-\[hsl\(var\(--background\)\)\] { background: var(--ac-paper) !important; }
+.lpb section, .lpb section.bg-white { background: transparent !important; border-color: var(--ac-line) !important; }
+.lpb header { background: var(--ac-card) !important; border-bottom: 2px solid var(--ac-ink) !important; }
+.lpb header nav a, .lpb header span { color: var(--ac-ink) !important; }
+.lpb h1, .lpb h2, .lpb h3 { font-family: 'Fraunces', Georgia, serif !important; font-weight: 900 !important; color: var(--ac-ink) !important; letter-spacing: -0.015em; }
+.lpb h1 { font-size: clamp(2.8rem, 6.4vw, 4.8rem) !important; line-height: 1.04 !important; }
+.lpb h1 span { background: none !important; -webkit-text-fill-color: var(--ac-gold) !important; color: var(--ac-gold) !important; font-style: italic; }
+.lpb p, .lpb .text-muted-foreground, .lpb .text-slate-600 { color: var(--ac-mut) !important; }
+.lpb .rounded-full.border { border: 2px solid var(--ac-gold) !important; background: transparent !important; color: var(--ac-gold) !important; border-radius: 999px !important; text-transform: uppercase; letter-spacing: 0.16em; font-size: 0.68rem !important; }
+.lpb .btn-primary { background: var(--ac-ink) !important; color: var(--ac-paper) !important; border-radius: 999px !important; font-weight: 800; box-shadow: 0 3px 0 #142A46; }
+.lpb .btn-primary:hover { background: #2A4C77 !important; }
+.lpb .btn-secondary, .lpb .btn-outline { background: transparent !important; border: 2px solid var(--ac-ink) !important; color: var(--ac-ink) !important; border-radius: 999px !important; }
+.lpb .card { background: var(--ac-card) !important; border: 1px solid var(--ac-line) !important; border-radius: 18px !important; box-shadow: 0 2px 0 var(--ac-line) !important; }
+.lpb .card .text-brand-600 { color: var(--ac-gold) !important; font-family: 'Fraunces', serif !important; }
+.lpb .card .text-3xl { display: none; }
+.lpb .card h3::before { content: ""; display: block; width: 34px; border-top: 3px dotted var(--ac-gold); margin-bottom: 10px; }
+.lpb .card p { color: var(--ac-mut) !important; }
+.lpb .bg-gradient-to-br { background: var(--ac-ink) !important; border-radius: 18px !important; }
+.lpb .bg-gradient-to-br p { color: var(--ac-paper) !important; font-family: 'Fraunces', serif !important; font-style: italic; font-weight: 600 !important; }
+.lpb details, .lpb summary { border-color: var(--ac-line) !important; }
+.lpb summary { color: var(--ac-ink) !important; font-family: 'Fraunces', serif !important; font-weight: 600; font-size: 1.05rem; }
+.lpb details p, .lpb details div { color: var(--ac-mut) !important; }
+.lpb .border-t { border-color: var(--ac-line) !important; }
+.lpb .text-brand-700, .lpb .text-brand-600, .lpb .text-brand-400 { color: var(--ac-gold) !important; }

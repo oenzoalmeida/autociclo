@@ -89,7 +89,7 @@ export default function LandingPage() {
     })),
   };
   return (
-    <div className="min-h-screen bg-white text-slate-900 dark:bg-[hsl(var(--background))] dark:text-slate-100">
+    <div className="lpb min-h-screen bg-white text-slate-900 dark:bg-[hsl(var(--background))] dark:text-slate-100">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
