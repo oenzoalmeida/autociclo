@@ -103,8 +103,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </aside>
 
+        <a href="#conteudo" className="pular-para-conteudo">Pular para o conteúdo</a>
+
         {/* Conteúdo admin */}
-        <main className="md:pl-64">
+        <main id="conteudo" className="md:pl-64">
           <div className="mx-auto w-full max-w-4xl px-4 pb-24 pt-6 sm:px-6 md:pb-16 md:pt-8">
             {children}
           </div>
@@ -165,8 +167,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
+      <a href="#conteudo" className="pular-para-conteudo">Pular para o conteúdo</a>
+
       {/* Conteúdo cliente */}
-      <main className="md:pl-64">
+      <main id="conteudo" className="md:pl-64">
         <div className="mx-auto w-full max-w-3xl px-4 pb-24 pt-6 sm:px-6 md:pb-16 md:pt-8">
           {children}
         </div>

@@ -101,3 +101,69 @@
     scrollbar-width: none;
   }
 }
+
+/* ------------------------------------------------------------------
+   Polimento de interface e movimento (referência de design: diretrizes
+   de interface da Apple / HIG e palestras de "fluid interfaces" da WWDC,
+   traduzidas para a web). Só refinamento: identidade visual, layout e
+   funcionalidades não mudam.
+------------------------------------------------------------------- */
+
+@layer components {
+  /* Alvos de 44px e resposta imediata ao toque (só transform, interrompível) */
+  .btn {
+    @apply min-h-[44px] transition-[background-color,border-color,color,transform];
+  }
+
+  .btn:active {
+    transform: scale(0.97);
+    transition-duration: 60ms;
+  }
+
+  /* Borda dos campos com contraste >= 3:1 (era --border, ~1.4:1) */
+  .input {
+    @apply border-[#7a8494] dark:border-[#66788a];
+  }
+
+  /* Números tabulares nos cards de métricas (colunas estáveis) */
+  .card {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Itens da navegação lateral com alvo de 44px */
+  aside a,
+  aside button {
+    @apply min-h-[44px];
+  }
+
+  /* Link "pular para o conteúdo" (visível só com foco de teclado) */
+  .pular-para-conteudo {
+    @apply absolute left-4 -top-14 z-[100] rounded-xl px-4 py-2.5 text-sm font-semibold no-underline transition-[top];
+    background: hsl(var(--foreground));
+    color: hsl(var(--background));
+  }
+
+  .pular-para-conteudo:focus-visible {
+    top: 12px;
+    color: hsl(var(--background));
+  }
+}
+
+/* Movimento reduzido: sem animação, sem rolagem suave, sem "afundar" */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .btn:active {
+    transform: none;
+  }
+}
