@@ -1,5 +1,5 @@
 -- AutoCiclo: READ-ONLY preview for historic maintenance/expense reconciliation.
--- Run only after migration 20261104101500_link_maintenance_expenses.sql.
+-- Run only after migration 20261106232000_link_maintenance_expenses_owner_fk.sql.
 -- No update, delete, insert, or automatic matching occurs.
 -- Equal amount/date does NOT prove a duplicate: verify each pair manually.
 with candidates as (

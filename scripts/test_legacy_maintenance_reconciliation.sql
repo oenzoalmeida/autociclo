@@ -51,7 +51,7 @@ begin
   end;
 end $$;
 
-\i supabase/migrations/20261104120000_backfill_unambiguous_maintenance_expenses.sql
+\i supabase/migrations/20261106232100_backfill_unambiguous_maintenance_expenses.sql
 
 do $$
 begin
