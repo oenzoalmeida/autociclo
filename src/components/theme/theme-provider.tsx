@@ -28,7 +28,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         const { data } = await supabase
           .from('user_preferences')
           .select('theme')
-          .single();
+          .maybeSingle();
         if (data?.theme) setThemeState(data.theme as Theme);
       } catch {
         // offline / sem sessão
