@@ -36,7 +36,7 @@ export default function ProfilePage() {
       setName(prof?.name ?? '');
       setEmail(prof?.email ?? '');
       setAvatar(prof?.avatar_url ?? null);
-      const { data: prefs } = await supabase.from('user_preferences').select('theme').single();
+      const { data: prefs } = await supabase.from('user_preferences').select('theme').maybeSingle();
       if (prefs?.theme) setTheme(prefs.theme as 'light' | 'dark' | 'system');
       setLoading(false);
     };
