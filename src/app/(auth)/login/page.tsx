@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Field, Input } from '@/components/ui/input';
+import { Field, Input, PasswordInput } from '@/components/ui/input';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -57,9 +57,9 @@ export default function LoginPage() {
           />
         </Field>
         <Field label="Senha" htmlFor="password">
-          <Input
+          <PasswordInput
             id="password"
-            type="password"
+            
             autoComplete="current-password"
             required
             placeholder="••••••••"

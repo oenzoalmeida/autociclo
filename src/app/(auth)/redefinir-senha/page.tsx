@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Field, Input } from '@/components/ui/input';
+import { Field, Input, PasswordInput } from '@/components/ui/input';
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState('');
@@ -75,9 +75,9 @@ export default function ResetPasswordPage() {
           </div>
         )}
         <Field label="Nova senha" htmlFor="password" hint="Mínimo de 8 caracteres.">
-          <Input
+          <PasswordInput
             id="password"
-            type="password"
+            
             autoComplete="new-password"
             required
             value={password}
@@ -86,9 +86,9 @@ export default function ResetPasswordPage() {
           />
         </Field>
         <Field label="Confirmar nova senha" htmlFor="confirm">
-          <Input
+          <PasswordInput
             id="confirm"
-            type="password"
+            
             autoComplete="new-password"
             required
             value={confirm}

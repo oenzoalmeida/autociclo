@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Field, Input } from '@/components/ui/input';
+import { Field, Input, PasswordInput } from '@/components/ui/input';
 
 export default function SignupPage() {
   const router = useRouter();
@@ -110,9 +110,9 @@ export default function SignupPage() {
           />
         </Field>
         <Field label="Senha" htmlFor="password" hint="Mínimo de 8 caracteres.">
-          <Input
+          <PasswordInput
             id="password"
-            type="password"
+            
             autoComplete="new-password"
             required
             placeholder="••••••••"
