@@ -337,3 +337,6 @@
 }
 .ac-auth h1 { color: #f2f0ea; }
 .ac-auth .text-muted-foreground { color: #9aa5ac; }
+.ac-auth .btn-primary{background:#ff6b1a;color:#101417}
+.ac-auth .btn-primary:hover{background:#ff8d4e}
+.ac-auth .text-brand-600,.ac-auth .text-brand-400{color:#ff9c62}
