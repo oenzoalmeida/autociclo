@@ -299,3 +299,44 @@
   .lpa .ac-marquee-track { animation: none; }
   .lpa section .card, .lpa section .card:hover { transition: none; transform: none; }
 }
+
+/* ------------------------------------------------------------------
+   Telas de acesso (nov/2026) - Oficina noturna
+   Cena escura de garagem (grade + brilho laranja) atras de um painel
+   de vidro com topo laranja e velocimetro. Escopo .ac-auth: o restante
+   do app nao muda. So apresentacao.
+------------------------------------------------------------------- */
+.ac-auth {
+  background:
+    radial-gradient(52rem 24rem at 50% -14%, rgba(255, 107, 26, 0.2), transparent 62%),
+    repeating-linear-gradient(0deg, transparent 0 31px, rgba(255, 255, 255, 0.03) 31px 32px),
+    repeating-linear-gradient(90deg, transparent 0 31px, rgba(255, 255, 255, 0.03) 31px 32px),
+    linear-gradient(180deg, #0c1013, #101417);
+  color: #f2f0ea;
+  min-height: 100vh;
+}
+.ac-auth-panel {
+  background: rgba(18, 23, 27, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-top: 3px solid #ff6b1a;
+  border-radius: 20px;
+  padding: 30px 28px 34px;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+}
+.ac-auth-gauge {
+  width: 130px;
+  margin: 0 auto 14px;
+}
+.ac-auth-gauge svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 10px 26px rgba(255, 107, 26, 0.25));
+}
+.ac-auth h1 { color: #f2f0ea; }
+.ac-auth .text-muted-foreground { color: #9aa5ac; }
+.ac-auth .btn-primary{background:#ff6b1a;color:#101417}
+.ac-auth .btn-primary:hover{background:#ff8d4e}
+.ac-auth .text-brand-600,.ac-auth .text-brand-400{color:#ff9c62}
