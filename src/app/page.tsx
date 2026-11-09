@@ -101,7 +101,7 @@ export default function LandingPage() {
       <Header />
 
       {/* Hero */}
-      <section className="relative overflow-hidden">
+      <section className="ac-hero relative overflow-hidden">
         <div className="pointer-events-none absolute inset-0 -z-10">
           <div className="absolute -top-32 left-1/2 h-96 w-[60rem] -translate-x-1/2 rounded-full bg-brand-100/70 blur-3xl dark:bg-brand-900/20" />
         </div>
@@ -133,7 +133,8 @@ export default function LandingPage() {
               Conhecer o AutoCiclo
             </a>
           </div>
-          <div className="mt-14 grid w-full max-w-3xl grid-cols-3 gap-4 text-center">
+          <Gauge />
+          <div className="ac-stats mt-14 grid w-full max-w-3xl grid-cols-3 gap-4 text-center">
             {[
               { v: '100%', l: 'Seus dados, só seus' },
               { v: '1 lugar', l: 'Tudo sobre o carro' },
@@ -147,6 +148,18 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* Faixa de itens acompanhados */}
+      <div className="ac-marquee" aria-hidden="true">
+        <div className="ac-marquee-track">
+          {[0, 1].map((i) => (
+            <span key={i}>
+              <b>Óleo</b> · Filtros · <b>Freios</b> · Pneus · <b>Correias</b> · Revisão ·{' '}
+              <b>Documentos</b> · Bateria · <b>Alinhamento</b> · Suspensão ·&nbsp;
+            </span>
+          ))}
+        </div>
+      </div>
 
       {/* Cuide antes que vire problema */}
       <section id="conhecer" className="border-t border-border bg-white py-20 dark:bg-[hsl(var(--card))]">
@@ -275,6 +288,68 @@ export default function LandingPage() {
         </div>
       </footer>
     </div>
+  );
+}
+
+function Gauge() {
+  const ticks = [
+    { x1: 34, y1: 100, x2: 28, y2: 100 },
+    { x1: 53.3, y1: 53.3, x2: 49.1, y2: 49.1 },
+    { x1: 100, y1: 34, x2: 100, y2: 28 },
+    { x1: 146.7, y1: 53.3, x2: 150.9, y2: 49.1 },
+    { x1: 166, y1: 100, x2: 172, y2: 100 },
+  ];
+  return (
+    <figure aria-hidden="true" className="ac-gauge">
+      <svg viewBox="0 0 200 120" role="presentation">
+        <defs>
+          <linearGradient id="ac-gauge-grad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stopColor="#C74500" />
+            <stop offset="1" stopColor="#FFB25C" />
+          </linearGradient>
+        </defs>
+        <path
+          d="M 20 100 A 80 80 0 0 1 180 100"
+          fill="none"
+          stroke="#2A3238"
+          strokeWidth="10"
+          strokeLinecap="round"
+        />
+        <path
+          d="M 20 100 A 80 80 0 0 1 156.6 43.4"
+          fill="none"
+          stroke="url(#ac-gauge-grad)"
+          strokeWidth="10"
+          strokeLinecap="round"
+        />
+        {ticks.map((t) => (
+          <line
+            key={`${t.x1}-${t.y1}`}
+            x1={t.x1}
+            y1={t.y1}
+            x2={t.x2}
+            y2={t.y2}
+            stroke="#9AA5AC"
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
+        ))}
+        <line
+          className="ac-needle"
+          x1="100"
+          y1="100"
+          x2="44"
+          y2="100"
+          stroke="#F2F0EA"
+          strokeWidth="4"
+          strokeLinecap="round"
+        />
+        <circle cx="100" cy="100" r="7" fill="#FF6B1A" stroke="#101417" strokeWidth="3" />
+      </svg>
+      <figcaption>
+        Status: <b>em dia</b> · 38.450 km
+      </figcaption>
+    </figure>
   );
 }
 
