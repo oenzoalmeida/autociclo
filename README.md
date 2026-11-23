@@ -68,6 +68,18 @@ PWA. Testes unitários com Vitest.
 
 ## Arquitetura / Estrutura
 
+Componentes principais da aplicação:
+
+```mermaid
+flowchart LR
+  U[Usuário autenticado] --> WEB[Next.js / React]
+  WEB --> AUTH[Supabase Auth]
+  WEB --> DATA[(PostgreSQL com RLS)]
+  WEB --> FILES[Storage privado]
+```
+
+As políticas RLS e de Storage restringem o acesso aos dados e arquivos conforme a titularidade e as permissões descritas nas seções de segurança. O diagrama é conceitual e não substitui a análise das políticas implementadas.
+
 ```text
 autociclo/
 ├── src/
