@@ -1,11 +1,7 @@
-// Setup global dos testes unitarios: nenhuma requisicao de rede real a hosts que nao sejam locais.
-// Falha rapido e alto se um teste (ou configuracao errada) tentar alcancar producao.
-import { isAllowedTestHost } from './allowed-host';
+// Setup global dos testes unitarios: default-deny para rede nao local, em duas camadas (fetch e socket/DNS).
+import dns from 'node:dns';
+import net from 'node:net';
+import { guardFetch, guardSocketLayer } from './guards';
 
-const realFetch = globalThis.fetch;
-globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
-  if (!isAllowedTestHost(input as string | URL | Request)) {
-    throw new Error('Rede bloqueada nos testes: somente localhost. Use mock/interceptacao.');
-  }
-  return realFetch(input as RequestInfo, init);
-}) as typeof fetch;
+globalThis.fetch = guardFetch(globalThis.fetch) as typeof fetch;
+guardSocketLayer(net as never, dns as never);
