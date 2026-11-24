@@ -38,7 +38,8 @@ const mkUser = async (tag) => {
 };
 
 let failed = 0;
-const check = (label, ok, detail = '') => { console.log(`${ok ? 'ok' : 'FALHOU'} ${label}${ok ? '' : ' :: ' + detail}`); if (!ok) failed++; };
+let total = 0;
+const check = (label, ok, detail = '') => { total++; console.log(`${ok ? 'ok' : 'FALHOU'} ${label}${ok ? '' : ' :: ' + detail}`); if (!ok) { failed++; console.log(`::error title=RLS e2e::${label}`); } };
 // Negado = erro 401/403 (RLS) ou 2xx sem nenhuma linha afetada.
 const denied = (res) => res.status === 401 || res.status === 403 || (res.status < 300 && Array.isArray(res.json) && res.json.length === 0);
 const allowed = (res) => res.status >= 200 && res.status < 300 && (!Array.isArray(res.json) || res.json.length > 0);
@@ -97,5 +98,6 @@ check('veículo de A intacto', va.json?.[0] && va.json[0].nickname !== 'invadido
 await admin('DELETE', `/auth/v1/admin/users/${A.id}`);
 await admin('DELETE', `/auth/v1/admin/users/${B.id}`);
 
-if (failed) { console.log(`${failed} verificação(ões) falharam`); process.exit(1); }
+if (failed) { console.log(`::error title=RLS e2e::${failed} de ${total} verificações falharam`); process.exit(1); }
 console.log('Isolamento com Auth/JWT reais: todas as verificações passaram.');
+console.log(`::notice title=RLS e2e (Auth/JWT reais)::${total} verificações executadas, ${failed} falhas`);
