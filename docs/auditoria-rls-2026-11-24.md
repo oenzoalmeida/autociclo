@@ -22,17 +22,43 @@ Método: as 15 migrações foram aplicadas em ordem num Postgres 17 descartável
 ## Testes
 
 - `scripts/test_rls_isolation.sql` (novo): 55 cenários de negação e de fluxo legítimo. Antes da migração o cenário "A grava gasto em veículo de B" falha (reproduz o defeito); com a migração todos passam.
-- `scripts/ci/rls-isolation.workflow.yml` (novo, ainda fora de `.github/workflows`, ver fim do documento): roda o script em Postgres 17 do runner a cada PR que toque `supabase/**`.
+- `.github/workflows/rls-isolation.yml` (novo): roda o script em Postgres 17 do runner a cada PR que toque `supabase/**`.
 - Vitest: 111 testes (16 novos), typecheck, lint e build de produção passam localmente.
 
 ## Limites
 
-- Não li as policies do banco real em produção: a comparação de 2026-11-03 (`docs/reconciliacao-migracoes.md`) indica que o remoto é igual às migrações, mas isso não foi reconfirmado hoje.
+- Banco real: ver a seção seguinte.
 - A migração nova **não foi aplicada** em nenhum banco real. Aplicar exige decisão do dono (ver `docs/reconciliacao-migracoes.md` sobre o histórico de migrações).
 - Não testado: Auth do Supabase em si (política de senha, confirmação de e-mail, limites de taxa, SMTP), que são configurações do projeto na plataforma, não do repositório.
 - Não testado: comportamento do PostgREST/Storage reais; o teste usa stubs de `auth` e `storage`.
 - Pendências menores, sem correção neste PR: `profiles.email` é editável pelo próprio usuário (só exibição); as policies usam `auth.uid()` sem `(select ...)`, custo de desempenho irrelevante no volume atual; bucket `vehicle-files` sem limite de tamanho/tipo definido na migração.
 
-## Workflow de CI pendente
+## Banco real em 2026-11-24 (somente leitura, transação `read only`)
 
-O token disponível para publicar este PR não tem o escopo `workflow`, então o GitHub recusou o arquivo `.github/workflows/rls-isolation.yml`. Ele está em `scripts/ci/rls-isolation.workflow.yml`. Para ativar o teste no CI, mova-o para `.github/workflows/rls-isolation.yml` (quem tiver permissão de workflow no repositório). Enquanto isso, o teste roda localmente com `psql -f scripts/test_rls_isolation.sql` num Postgres com os stubs descritos no próprio arquivo do workflow.
+- As 66 policies de `public` e `storage` são iguais às produzidas pelas migrações do `main` (comparação normalizada, texto a texto). Logo as falhas 1 e 2 existem no banco real.
+- Consultas de integridade (somente contagens): nenhum registro com dono diferente do dono do veículo nas tabelas filhas, nenhum chamado com `admin_note`, 6 usuários, 1 admin, todos com papel. Isso registra apenas que as consultas feitas não encontraram registros divergentes. Não prova que não houve exploração no passado (linhas apagadas, alteradas ou cascateadas não aparecem) nem o efeito exato da migração nova.
+- Postgres 17.6.
+- Funções: `is_admin`, `is_vehicle_member` e `set_updated_at` ainda são executáveis por `anon` (retornam falso/inofensivo); as demais seguem as migrações.
+
+## Histórico de migrações: reconciliação proposta (NÃO aplicada)
+
+Registro em `supabase_migrations.schema_migrations` (12 versões): `00001` a `00009`, `20261015185046`, `20261103130000`, `20261103130100`. O doc `reconciliacao-migracoes.md` de 2026-11-03 está desatualizado nesse ponto.
+
+| Versão no repositório | Registrada | Efeito no banco real |
+|---|---|---|
+| `20261105120000_expenses_maintenance_record_link` | não | presente: coluna, índice `idx_expenses_maintenance_record`, FK simples e função `register_maintenance_with_expense` (corpo com o mesmo md5 do arquivo) |
+| `20261106232000_link_maintenance_expenses_owner_fk` | não | **ausente**: sem `expenses_maintenance_owner_fk`, sem `maintenance_records_id_user_vehicle_unique`, sem `expenses_maintenance_unique_link` |
+| `20261106232100_backfill_unambiguous_maintenance_expenses` | não | **não executada**: 0 de 2 gastos vinculados |
+| `20261124120000_rls_vehicle_ownership_checks` (este PR) | não | ausente |
+
+Consequência da ausência da `20261106232000`: hoje `expenses.maintenance_record_id` só tem FK simples, então um gasto pode apontar para registro de manutenção de outro usuário ou de outro veículo. A migração fecha isso.
+
+Sequência proposta, cada passo só com decisão do dono e depois de ensaio em banco descartável restaurado do backup:
+
+1. `supabase migration list` para confirmar o estado acima.
+2. `supabase migration repair --status applied 20261105120000` (efeito conferido).
+3. `supabase db push --dry-run` e conferir que listaria exatamente `20261106232000`, `20261106232100` e `20261124120000`, nessa ordem.
+4. Ensaiar as três num restore do backup do dia (script de teste `scripts/test_rls_isolation.sql` incluso), depois `supabase db push` no real.
+5. Reexecutar a leitura de policies e o teste de isolamento contra o real.
+
+Não rodar `supabase db push` antes do passo 2: tentaria reaplicar `20261105120000`.
