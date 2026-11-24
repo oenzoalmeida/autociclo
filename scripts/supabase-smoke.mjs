@@ -1,7 +1,9 @@
 // Smoke test contra a stack local descartável do Supabase (job `supabase` do CI).
 // Falha se a stack não subiu, se as migrações não aplicaram ou se o PostgREST
 // não está servindo o schema público.
+import './lib/enforce-local-network.mjs';
 import { execSync } from 'node:child_process';
+import { assertLocalSupabase } from './lib/assert-local-supabase.mjs';
 
 const env = Object.fromEntries(
   execSync('supabase status -o env', { encoding: 'utf8' })
@@ -10,6 +12,7 @@ const env = Object.fromEntries(
     .map((l) => l.replace(/"/g, '').split('=')),
 );
 const { API_URL, ANON_KEY } = env;
+if (API_URL) assertLocalSupabase(API_URL);
 if (!API_URL || !ANON_KEY) throw new Error('supabase status não retornou API_URL/ANON_KEY');
 
 const get = async (path) => {
@@ -31,3 +34,6 @@ for (const [path, label] of checks) {
 }
 if (failed) process.exit(1);
 console.log('Supabase local: migrações aplicadas e PostgREST servindo o schema.');
+
+// Isolamento entre usuários com Auth/JWT reais (stack local descartável).
+await import('./supabase-rls-e2e.mjs');

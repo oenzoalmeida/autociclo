@@ -7,4 +7,8 @@ export default defineConfig({
       '@': path.resolve(__dirname, 'src'),
     },
   },
+  test: {
+    // Bloqueia rede real a hosts nao locais em todos os testes unitarios.
+    setupFiles: ['./src/test/network-guard.ts'],
+  },
 });
