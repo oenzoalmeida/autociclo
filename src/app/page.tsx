@@ -30,7 +30,7 @@ const features = [
   {
     icon: '🔔',
     title: 'Alertas',
-    desc: 'Receba avisos antes de algo sair do prazo — e saiba o que precisa de atenção.',
+    desc: 'Receba avisos antes do vencimento dos prazos e saiba o que precisa de atenção.',
   },
   {
     icon: '📜',
