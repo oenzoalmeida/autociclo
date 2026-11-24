@@ -1,6 +1,7 @@
 // Teste de isolamento entre usuários com Auth e JWT REAIS, contra a stack local
 // descartável do Supabase (Docker do runner; job `supabase` do CI).
 // Usa só usuários fictícios criados na stack local; nada de produção, nenhum e-mail real.
+import './lib/enforce-local-network.mjs';
 import { execSync } from 'node:child_process';
 import { assertLocalSupabase } from './lib/assert-local-supabase.mjs';
 

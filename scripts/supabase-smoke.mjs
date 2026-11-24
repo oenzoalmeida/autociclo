@@ -1,6 +1,7 @@
 // Smoke test contra a stack local descartável do Supabase (job `supabase` do CI).
 // Falha se a stack não subiu, se as migrações não aplicaram ou se o PostgREST
 // não está servindo o schema público.
+import './lib/enforce-local-network.mjs';
 import { execSync } from 'node:child_process';
 import { assertLocalSupabase } from './lib/assert-local-supabase.mjs';
 
