@@ -31,3 +31,6 @@ for (const [path, label] of checks) {
 }
 if (failed) process.exit(1);
 console.log('Supabase local: migrações aplicadas e PostgREST servindo o schema.');
+
+// Isolamento entre usuários com Auth/JWT reais (stack local descartável).
+await import('./supabase-rls-e2e.mjs');
