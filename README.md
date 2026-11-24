@@ -1,8 +1,8 @@
 # AutoCiclo
 
-O AutoCiclo é uma aplicação para organizar manutenções, revisões, quilometragem, gastos e documentos de veículos. Os registros formam um histórico consultável para acompanhar os serviços e custos informados pelo usuário.
+O AutoCiclo permite registrar serviços e despesas de veículos e consultar o histórico de cada um. O sistema também acompanha a quilometragem, reúne documentos e sinaliza manutenções que precisam de atenção.
 
-Aplicação web responsiva/PWA construída em Next.js com TypeScript e Supabase (PostgreSQL, autenticação e storage), com Row Level Security no banco e perfis de acesso cliente/admin.
+A aplicação usa Next.js e TypeScript, com Supabase para autenticação, banco PostgreSQL e arquivos. As políticas Row Level Security (RLS) restringem o acesso aos registros de cada usuário.
 
 ## Demonstração
 
@@ -16,9 +16,9 @@ Aplicação web responsiva/PWA construída em Next.js com TypeScript e Supabase 
 |---|---|
 | ![Página inicial do AutoCiclo](docs/screenshots/inicio.png) | ![Seção de recursos](docs/screenshots/recursos.png) |
 
-## Sobre o projeto
+## Funcionamento
 
-O AutoCiclo acompanha a manutenção preventiva do veículo como um prontuário: múltiplos carros por conta, registro de quilometragem com histórico, manutenções com catálogo inicial de itens (óleo, filtros, freios, pneus, correias etc.) ou itens personalizados, status de cada item (Em dia, Atenção, Atrasado, Sem informações), linha do tempo, controle de gastos por categoria, alertas e relatório imprimível.
+Cada usuário pode cadastrar vários veículos e registrar manutenções com itens de um catálogo ou itens personalizados. O sistema calcula o estado de cada item (Em dia, Atenção, Atrasado ou Sem informações), organiza os registros em uma linha do tempo e permite consultar gastos e emitir relatórios.
 
 O conceito de **AutoCiclo Score** (0–100) representa o nível de organização das manutenções cadastradas. O indicador não é um diagnóstico mecânico.
 
