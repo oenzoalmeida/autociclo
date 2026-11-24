@@ -16,7 +16,7 @@ A aplicação usa Next.js e TypeScript, com Supabase para autenticação, banco 
 |---|---|
 | ![Página inicial do AutoCiclo](docs/screenshots/inicio.png) | ![Seção de recursos](docs/screenshots/recursos.png) |
 
-## Sobre o projeto
+## Funcionamento
 
 Cada usuário pode cadastrar vários veículos e registrar manutenções com itens de um catálogo ou itens personalizados. O sistema calcula o estado de cada item (Em dia, Atenção, Atrasado ou Sem informações), organiza os registros em uma linha do tempo e permite consultar gastos e emitir relatórios.
 
