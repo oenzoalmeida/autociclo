@@ -2,7 +2,7 @@
 
 O AutoCiclo é uma aplicação para organizar manutenções, revisões, quilometragem, gastos e documentos de veículos. Os registros formam um histórico consultável para acompanhar os serviços e custos informados pelo usuário.
 
-Aplicação web responsiva/PWA construída em Next.js com TypeScript e Supabase (PostgreSQL, autenticação e storage), com Row Level Security no banco e perfis de acesso cliente/admin.
+Aplicação web responsiva e instalável (PWA), desenvolvida com Next.js e TypeScript. Utiliza Supabase para banco PostgreSQL, autenticação e armazenamento de arquivos, com Row Level Security e perfis de cliente e administrador.
 
 ## Demonstração
 
