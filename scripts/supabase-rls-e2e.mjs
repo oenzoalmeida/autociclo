@@ -2,6 +2,7 @@
 // descartável do Supabase (Docker do runner; job `supabase` do CI).
 // Usa só usuários fictícios criados na stack local; nada de produção, nenhum e-mail real.
 import { execSync } from 'node:child_process';
+import { assertLocalSupabase } from './lib/assert-local-supabase.mjs';
 
 const env = Object.fromEntries(
   execSync('supabase status -o env', { encoding: 'utf8' })
@@ -9,6 +10,7 @@ const env = Object.fromEntries(
     .map((l) => { const i = l.indexOf('='); return [l.slice(0, i), l.slice(i + 1).replace(/^"|"$/g, '')]; }),
 );
 const API = env.API_URL;
+assertLocalSupabase(API);
 const ANON = env.ANON_KEY;
 const SERVICE = env.SERVICE_ROLE_KEY || env.SECRET_KEY;
 if (!API || !ANON || !SERVICE) throw new Error('supabase status sem API_URL/ANON_KEY/SERVICE_ROLE_KEY');

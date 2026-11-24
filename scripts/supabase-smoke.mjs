@@ -2,6 +2,7 @@
 // Falha se a stack não subiu, se as migrações não aplicaram ou se o PostgREST
 // não está servindo o schema público.
 import { execSync } from 'node:child_process';
+import { assertLocalSupabase } from './lib/assert-local-supabase.mjs';
 
 const env = Object.fromEntries(
   execSync('supabase status -o env', { encoding: 'utf8' })
@@ -10,6 +11,7 @@ const env = Object.fromEntries(
     .map((l) => l.replace(/"/g, '').split('=')),
 );
 const { API_URL, ANON_KEY } = env;
+if (API_URL) assertLocalSupabase(API_URL);
 if (!API_URL || !ANON_KEY) throw new Error('supabase status não retornou API_URL/ANON_KEY');
 
 const get = async (path) => {
